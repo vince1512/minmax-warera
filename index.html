@@ -150,6 +150,124 @@
             border-color: rgba(99, 102, 241, 0.25);
         }
 
+        /* ─── Player Profile Badge Styles ───────────────────────────── */
+        #player-profile-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(22, 30, 49, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 99px;
+            padding: 6px 16px 6px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .profile-badge:hover {
+            background: rgba(30, 41, 69, 0.95);
+            border-color: rgba(99, 102, 241, 0.35);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            padding: 2.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 2px solid #0b0f19;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent);
+            border: 2px solid #0b0f19;
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .profile-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #fff;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-level {
+            font-weight: 800;
+            font-size: 0.65rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: var(--font-mono);
+        }
+
+        /* Placeholder/Invitation version */
+        .profile-placeholder {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 99px;
+            padding: 8px 16px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .profile-placeholder:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Suggestions Autocomplete */
+        .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none !important;
+        }
+
         /* ─── Styles des Cartes Collapsibles ─────────────────────────── */
         .card-header-toggle {
             display: flex;
@@ -1287,6 +1405,11 @@
             <button id="nav-skills" onclick="navigate('skills')">⚙️ Compétences</button>
             <button id="nav-zones" onclick="navigate('zones')">🗺️ Classement Zones</button>
         </nav>
+
+        <!-- Player Profile Badge -->
+        <div id="player-profile-container">
+            <!-- Rendu dynamique -->
+        </div>
     </header>
 
     <!-- ─── Main Content Area ──────────────────────────────────────── -->
@@ -1473,51 +1596,7 @@
                 </div>
             </div>
 
-            <div class="optim-layout">
-                <!-- Global optimizer -->
-                <div class="card">
-                    <div class="card-header-toggle" onclick="toggleCard(this)">
-                        <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px; margin-bottom: 0;">
-                            🚀 Optimiseur Automatique
-                        </h3>
-                        <span class="toggle-icon">▼</span>
-                    </div>
-                    <div class="card-body" style="margin-top: 16px; display: flex; flex-direction: column; gap: 24px;">
-                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0;">
-                            Cet algorithme analyse les marges bénéficiaires de toutes les ressources. Il reconfigure ensuite vos usines sur le type de production le plus rentable et y distribue vos boosts d'entrepreneuriat disponibles.
-                        </p>
-
-                        <div style="padding: 16px; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 12px;">
-                            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--accent);">Bilan estimé après optimisation :</h4>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                                <span>Bénéfice actuel :</span>
-                                <strong id="opt-current-profit" style="font-family: var(--font-mono);">0.00 €/j</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                                <span>Bénéfice optimisé :</span>
-                                <strong id="opt-future-profit" style="font-family: var(--font-mono); color: var(--accent);">0.00 €/j</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-                                <span>Augmentation des gains :</span>
-                                <strong id="opt-percent-gain" style="font-family: var(--font-mono); color: var(--accent);">+0%</strong>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-accent" style="width: 100%; padding: 14px;" onclick="applyOptimization()">
-                            🚀 Appliquer l'Optimisation Globale
-                        </button>
-
-                        <div>
-                            <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 12px;">
-                                Classement des ressources les plus rentables (€ brut par PP) :
-                            </h4>
-                            <div class="profitability-rank-list" id="opt-rank-list">
-                                <!-- Filled dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div>
                 <!-- ROI Planner -->
                 <div class="card">
                     <div class="card-header-toggle" onclick="toggleCard(this)">
@@ -1527,12 +1606,27 @@
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="card-body" style="margin-top: 16px; display: flex; flex-direction: column; gap: 20px;">
-                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0;">
-                            Quelles usines devriez-vous améliorer en premier ? Ce tableau liste toutes les améliorations possibles triées par leur <strong>temps de retour sur investissement (ROI)</strong> en jours (plus court est le meilleur).
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
+                            Quelles usines devriez-vous améliorer en premier ? Ce tableau prend en compte les prix réels du marché en temps réel et liste les étapes de développement les plus optimales triées par leur <strong>temps de retour sur investissement (ROI)</strong>.
                         </p>
 
-                        <div class="roi-list" id="roi-planner-list">
-                            <!-- Filled dynamically -->
+                        <div class="roi-planner-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+                            <div>
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                    📋 Séquence d'Actions Chronologiques
+                                </h4>
+                                <div class="roi-list" id="roi-planner-list">
+                                    <!-- Filled dynamically -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                    🏭 Statut & Objectif Cible par Usine
+                                </h4>
+                                <div id="roi-factory-goals-list" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <!-- Filled dynamically -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1548,7 +1642,7 @@
                 </div>
                 <div class="card-body" style="margin-top: 16px;">
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; line-height: 1.4;">
-                        En fonction de vos barres de régénération quotidienne (10% par heure), déterminez s'il est préférable de travailler chez les autres (salariat) ou pour vous-même, et dans quelles usines investir vos points d'Entrepreneuriat.
+                        Optimisez l'utilisation de vos deux barres d'énergie distinctes et indépendantes (10% de régénération par heure chacune) : déterminez les meilleures options de travail personnel (Entrepreneuriat) et évaluez vos opportunités d'emploi salarié chez les autres (Énergie).
                     </p>
 
                     <div class="market-layout" style="grid-template-columns: 1.2fr 1fr; gap: 24px;">
@@ -1667,7 +1761,7 @@
                             </p>
                             <div class="form-group" style="margin-bottom: 16px;">
                                 <label>Pseudo ou ID Joueur</label>
-                                <input type="text" id="api-user-id" placeholder="Pseudo (ex: Baboon) or ID" value="" title="Votre pseudo en jeu ou ID joueur">
+                                <input type="text" id="api-user-id" placeholder="Pseudo (ex: Baboon) or ID" value="" title="Votre pseudo en jeu ou ID joueur" autocomplete="off">
                             </div>
                             <button class="btn btn-primary" style="width: 100%;" onclick="syncWithAPI()">
                                 🔄 Synchroniser Maintenant
@@ -1807,6 +1901,43 @@
             munitions_lourdes: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M16 46 L20 46 L20 24 L18 14 L16 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="14" y="46" width="8" height="6" fill="#d68910"/><path d="M30 46 L34 46 L34 24 L32 14 L30 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="28" y="46" width="8" height="6" fill="#d68910"/><path d="M44 46 L48 46 L48 24 L46 14 L44 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="42" y="46" width="8" height="6" fill="#d68910"/></svg>`
         };
 
+        // ─── Table XP de Progression du Joueur ───────────────────────
+        const LEVEL_XP_TABLE = {
+            1: 0, 2: 100, 3: 200, 4: 300, 5: 500, 6: 700, 7: 900, 8: 1200, 9: 1600, 10: 2100,
+            11: 2700, 12: 3400, 13: 4200, 14: 5100, 15: 6100, 16: 7200, 17: 8400, 18: 9700, 19: 11100, 20: 12600,
+            21: 14200, 22: 15900, 23: 17700, 24: 19600, 25: 21600, 26: 23600, 27: 25600, 28: 27600, 29: 29600, 30: 31600,
+            31: 34100, 32: 36600, 33: 39100, 34: 41600, 35: 44100, 36: 46600, 37: 49100, 38: 51600, 39: 54100, 40: 56600,
+            41: 59600, 42: 62600, 43: 65600, 44: 68600, 45: 71600, 46: 74600, 47: 77600, 48: 80600, 49: 83600, 50: 86600
+        };
+
+        // Utility for escaping HTML characters to prevent XSS and layout breaking
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function getXpNeededToReachLevel(lvl) {
+            const intLvl = parseInt(lvl) || 1;
+            if (intLvl <= 1) return 0;
+            if (LEVEL_XP_TABLE[intLvl] !== undefined) {
+                return LEVEL_XP_TABLE[intLvl];
+            }
+            // Au-delà de 50 : on augmente de 3000 XP par niveau
+            const baseLevel = 50;
+            const baseXP = 86600;
+            const diff = intLvl - baseLevel;
+            return baseXP + diff * 3000;
+        }
+
+        function getXpRequiredForLevelUp(currentLvl) {
+            return getXpNeededToReachLevel(currentLvl + 1) - getXpNeededToReachLevel(currentLvl);
+        }
+
         function getResourceIcon(key, size = 24) {
             const rawSvg = RESOURCE_ICONS[key];
             if (rawSvg) {
@@ -1894,6 +2025,139 @@
             globalConfig.boostPp = playerSkills.production.value;
         }
 
+        // ─── Player Profile Rendering ────────────────────────────────
+        function getCountryFlagGradient(code) {
+            if (!code) return 'linear-gradient(135deg, var(--primary), var(--accent))';
+            code = code.toUpperCase();
+            switch (code) {
+                case 'FR': return 'linear-gradient(90deg, #002395 33%, #ffffff 33% 66%, #ed2939 66%)';
+                case 'US': return 'linear-gradient(135deg, #3c3b6e, #b22234)';
+                case 'DE': return 'linear-gradient(180deg, #000000 33%, #dd0000 33% 66%, #ffce00 66%)';
+                case 'ES': return 'linear-gradient(180deg, #aa151b 25%, #f1bf00 25% 75%, #aa151b 75%)';
+                case 'IT': return 'linear-gradient(90deg, #009246 33%, #ffffff 33% 66%, #ce2b37 66%)';
+                case 'GB': return 'linear-gradient(135deg, #00247d, #cf142b)';
+                case 'CA': return 'linear-gradient(90deg, #ff0000 25%, #ffffff 25% 75%, #ff0000 75%)';
+                case 'RU': return 'linear-gradient(180deg, #ffffff 33%, #0039a6 33% 66%, #d52b1e 66%)';
+                case 'BE': return 'linear-gradient(90deg, #000000 33%, #ffd300 33% 66%, #ff0f21 66%)';
+                case 'CH': return 'linear-gradient(135deg, #d50000, #ff1744)';
+                default: return 'linear-gradient(135deg, var(--primary), var(--accent))';
+            }
+        }
+
+        window.focusSyncInput = function() {
+            navigate('skills');
+            setTimeout(() => {
+                const input = document.getElementById('api-user-id');
+                if (input) {
+                    input.focus();
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const card = input.closest('.card');
+                    if (card) {
+                        card.style.borderColor = 'var(--primary)';
+                        card.style.boxShadow = '0 0 15px var(--primary-glow)';
+                        setTimeout(() => {
+                            card.style.borderColor = '';
+                            card.style.boxShadow = '';
+                        }, 1500);
+                    }
+                }
+            }, 250);
+        };
+
+        function renderPlayerProfile() {
+            const container = document.getElementById('player-profile-container');
+            if (!container) return;
+
+            const savedProfile = localStorage.getItem('usines_sim_player_profile');
+            const savedCountries = localStorage.getItem('usines_sim_countries');
+
+            if (!savedProfile) {
+                container.innerHTML = `
+                    <div class="profile-placeholder" onclick="focusSyncInput()" title="Cliquez pour configurer votre compte">
+                        <span>👤 Synchroniser pseudo</span>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const profile = JSON.parse(savedProfile);
+                let countryFlag = '🏳️';
+                let flagGradient = 'linear-gradient(135deg, var(--primary), var(--accent))';
+
+                if (savedCountries && profile.country) {
+                    const countries = JSON.parse(savedCountries);
+                    const country = countries.find(c => c._id === profile.country);
+                    if (country) {
+                        countryFlag = getFlagEmoji(country.code);
+                        flagGradient = getCountryFlagGradient(country.code);
+                    }
+                }
+
+                const avatarUrlEscaped = profile.avatarUrl ? profile.avatarUrl.replace(/'/g, "%27") : '';
+                const avatarStyle = avatarUrlEscaped 
+                    ? `background-image: url('${avatarUrlEscaped}');` 
+                    : `background: #1e293b;`;
+
+                // Calculer l'XP et le suivant
+                let xpBarHtml = '';
+                let tooltipXp = '';
+                if (profile.totalXp !== undefined) {
+                    const currentL = profile.level || 18;
+                    const baseL = getXpNeededToReachLevel(currentL);
+                    const nextL = getXpNeededToReachLevel(currentL + 1);
+                    const xpInLevel = Math.max(0, profile.totalXp - baseL);
+                    const xpForNextLevel = nextL - baseL;
+                    const pct = Math.min(100, (xpInLevel / xpForNextLevel * 100));
+                    
+                    const formatXp = (val) => {
+                        if (val >= 1000) {
+                            return (val / 1000).toFixed(2).replace(/\.00$/, '').replace(/\.([0-9])0$/, '.$1') + 'K';
+                        }
+                        return val;
+                    };
+                    
+                    const xpInLevelStr = formatXp(xpInLevel);
+                    const xpForNextLevelStr = formatXp(xpForNextLevel);
+                    
+                    tooltipXp = `\n\nLevel ${currentL}\nGagne de l'✦ Xp en terminant tes missions !\n✦ ${xpInLevelStr}/${xpForNextLevelStr} (${profile.totalXp} XP au total)\nAtteindre le niveau ${currentL + 1} vous donnera 4 Points de Compétence.`;
+                    
+                    xpBarHtml = `
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                            <div class="profile-xp-bar-container" style="width: 50px; height: 5px; background: rgba(255,255,255,0.12); border-radius: 4px; overflow: hidden; position: relative;" title="Progression : ${xpInLevelStr}/${xpForNextLevelStr} XP">
+                                <div class="profile-xp-bar" style="width: ${pct.toFixed(1)}%; height: 100%; background: var(--accent); box-shadow: 0 0 6px var(--accent); border-radius: 4px;"></div>
+                            </div>
+                            <span style="font-size: 0.6rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: bold; white-space: nowrap;">
+                                ✦ ${xpInLevelStr}/${xpForNextLevelStr}
+                            </span>
+                        </div>
+                    `;
+                }
+
+                const safeProfileName = escapeHTML(profile.username);
+                container.innerHTML = `
+                    <div class="profile-badge" onclick="focusSyncInput()" title="Profil de ${safeProfileName} (Cliquez pour resynchroniser)${tooltipXp}">
+                        <div class="avatar-wrapper" style="background: ${flagGradient};">
+                            <div class="avatar-img" style="${avatarStyle}"></div>
+                            <span class="status-dot" title="Profil synchronisé"></span>
+                        </div>
+                        <div class="profile-info">
+                            <span class="profile-name">${safeProfileName}</span>
+                            <span class="profile-level">LEVEL ${profile.level}</span>
+                            ${xpBarHtml}
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error("Erreur de rendu du profil joueur", e);
+                container.innerHTML = `
+                    <div class="profile-placeholder" onclick="focusSyncInput()">
+                        <span>👤 Synchroniser pseudo</span>
+                    </div>
+                `;
+            }
+        }
+
         // Graphique Chart.js global
         let chartInstance = null;
 
@@ -1928,6 +2192,137 @@
             if (importInput) {
                 importInput.addEventListener('change', importData);
             }
+
+            // Autocomplete pour les pseudos
+            const userIdInput = document.getElementById('api-user-id');
+            if (userIdInput) {
+                let suggestionsDiv = document.getElementById('username-suggestions');
+                if (!suggestionsDiv) {
+                    suggestionsDiv = document.createElement('div');
+                    suggestionsDiv.id = 'username-suggestions';
+                    suggestionsDiv.style = `
+                        display: none;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        right: 0;
+                        background: #0b0f19;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: var(--radius-md);
+                        max-height: 200px;
+                        overflow-y: auto;
+                        z-index: 1000;
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                        margin-top: 4px;
+                    `;
+                    userIdInput.parentElement.style.position = 'relative';
+                    userIdInput.parentElement.appendChild(suggestionsDiv);
+                }
+
+                let debounceTimer = null;
+                let abortController = null;
+                userIdInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    if (abortController) {
+                        abortController.abort();
+                    }
+
+                    const query = userIdInput.value.trim();
+                    if (query.length < 2) {
+                        suggestionsDiv.style.display = 'none';
+                        return;
+                    }
+
+                    // Délais réduit à 120ms pour un affichage quasi instantané
+                    debounceTimer = setTimeout(async () => {
+                        abortController = new AbortController();
+                        const { signal } = abortController;
+
+                        try {
+                            const apiKey = localStorage.getItem('usines_sim_api_key') || '';
+                            const headers = { 'Content-Type': 'application/json' };
+                            if (apiKey) headers['X-API-Key'] = apiKey;
+
+                            const searchInput = encodeURIComponent(JSON.stringify({ searchText: query }));
+                            const searchRes = await fetch(`https://gateway.warerastats.io/trpc/search.searchAnything?input=${searchInput}`, { headers, signal });
+                            if (!searchRes.ok) return;
+                            const searchData = await searchRes.json();
+                            const candidateIds = (searchData.result.data.userIds || []).slice(0, 5);
+
+                            if (candidateIds.length === 0) {
+                                suggestionsDiv.style.display = 'none';
+                                return;
+                            }
+
+                            const profilePromises = candidateIds.map(async (candidateId) => {
+                                const input = encodeURIComponent(JSON.stringify({ userId: candidateId }));
+                                const res = await fetch(`https://gateway.warerastats.io/trpc/user.getUserLite?input=${input}`, { headers, signal });
+                                if (!res.ok) return null;
+                                const pData = await res.json();
+                                return pData.result.data;
+                            });
+
+                            const profiles = (await Promise.all(profilePromises)).filter(p => p);
+                            if (profiles.length === 0 || signal.aborted) {
+                                suggestionsDiv.style.display = 'none';
+                                return;
+                            }
+
+                            suggestionsDiv.innerHTML = '';
+                            profiles.forEach(prof => {
+                                const flag = prof.country ? getCountryFlagFromId(prof.country) : '🏳️';
+                                const item = document.createElement('div');
+                                item.className = 'suggestion-item';
+                                item.style = `
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: space-between;
+                                    padding: 8px 12px;
+                                    cursor: pointer;
+                                    border-bottom: 1px solid rgba(255,255,255,0.03);
+                                    transition: background 0.15s ease;
+                                `;
+                                item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.06)';
+                                item.onmouseleave = () => item.style.background = 'transparent';
+                                
+                                const avatarUrlEscaped = prof.avatarUrl ? prof.avatarUrl.replace(/'/g, "%27") : '';
+                                const avatarStyle = avatarUrlEscaped 
+                                    ? `background-image: url('${avatarUrlEscaped}');` 
+                                    : `background: #1e293b;`;
+
+                                item.innerHTML = `
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 24px; height: 24px; border-radius: 50%; background-size: cover; background-position: center; ${avatarStyle} border: 1px solid rgba(255,255,255,0.1);"></div>
+                                        <strong style="color: #fff; font-size: 0.85rem;">${escapeHTML(prof.username)}</strong>
+                                        <span style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">Lvl ${prof.leveling ? prof.leveling.level : 1}</span>
+                                    </div>
+                                    <span style="font-size: 0.9rem;">${flag}</span>
+                                `;
+
+                                item.addEventListener('click', () => {
+                                    userIdInput.value = prof.username;
+                                    suggestionsDiv.style.display = 'none';
+                                    syncWithAPI();
+                                });
+                                suggestionsDiv.appendChild(item);
+                            });
+                            suggestionsDiv.style.display = 'block';
+
+                        } catch (e) {
+                            if (e.name !== 'AbortError') {
+                                console.error("Erreur de suggestions", e);
+                            }
+                        }
+                    }, 120);
+                });
+
+                // Fermer les suggestions si on clique ailleurs
+                document.addEventListener('click', (e) => {
+                    if (e.target !== userIdInput && e.target !== suggestionsDiv) {
+                        suggestionsDiv.style.display = 'none';
+                    }
+                });
+            }
         });
 
         function toggleCard(headerElement) {
@@ -1952,6 +2347,20 @@
             } catch (e) {
                 return '🏳️';
             }
+        }
+
+        function getCountryFlagFromId(countryId) {
+            const savedCountries = localStorage.getItem('usines_sim_countries');
+            if (savedCountries && countryId) {
+                try {
+                    const countries = JSON.parse(savedCountries);
+                    const country = countries.find(c => c._id === countryId);
+                    if (country) {
+                        return getFlagEmoji(country.code);
+                    }
+                } catch (e) {}
+            }
+            return '🏳️';
         }
 
         // ─── Navigation entre Onglets ───────────────────────────────
@@ -2456,6 +2865,7 @@
                 playerWorkplace = null;
             }
         
+            renderPlayerProfile();
             updateMaxBonusesFromApi();
         }
 
@@ -2468,6 +2878,7 @@
                 localStorage.removeItem('usines_sim_api_user_id');
                 localStorage.removeItem('usines_sim_skills');
                 localStorage.removeItem('usines_sim_player_workplace');
+                localStorage.removeItem('usines_sim_player_profile');
                 
                 factories = [];
                 playerWorkplace = null;
@@ -2515,6 +2926,7 @@
                 renderMarketInputs();
                 updateCalculations();
                 updateChart();
+                renderPlayerProfile();
                 showToast("Données réinitialisées !");
             }
         }
@@ -2572,6 +2984,27 @@
             reader.readAsText(file);
         }
 
+        // ─── Autocomplete / Suggestions de Pseudo ────────────────────
+        let searchDebounceTimeout = null;
+        const suggestionCache = {};
+
+        async function getApiKey() {
+            let apiKey = "";
+            try {
+                const configRes = await fetch('config.json');
+                if (configRes.ok) {
+                    const configData = await configRes.json();
+                    apiKey = configData.apiKey ? configData.apiKey.trim() : "";
+                }
+            } catch (e) {}
+            if (!apiKey) {
+                apiKey = localStorage.getItem('usines_sim_api_key') || "";
+            }
+            return apiKey;
+        }
+
+
+
         // ─── Notification Toast ──────────────────────────────────────
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -2592,21 +3025,8 @@
             statusDiv.innerText = "Chargement clé...";
 
             try {
-                // Charger la clé API depuis config.json ou fallback localStorage
-                let apiKey = "";
-                try {
-                    const configRes = await fetch('config.json');
-                    if (configRes.ok) {
-                        const configData = await configRes.json();
-                        apiKey = configData.apiKey ? configData.apiKey.trim() : "";
-                    }
-                } catch (e) {
-                    // Ignorer
-                }
-
-                if (!apiKey) {
-                    apiKey = localStorage.getItem('usines_sim_api_key') || "";
-                }
+                // Charger la clé API
+                const apiKey = await getApiKey();
 
                 if (!apiKey) {
                     throw new Error("Clé API introuvable. Veuillez configurer le fichier 'config.json' à la racine de l'application.");
@@ -2913,11 +3333,23 @@
 
                 factories = newFactories;
                 
+                if (userProfile) {
+                    localStorage.setItem('usines_sim_player_profile', JSON.stringify({
+                        username: userProfile.username,
+                        level: userProfile.leveling ? userProfile.leveling.level : 18,
+                        totalXp: userProfile.leveling ? userProfile.leveling.totalXp : 0,
+                        avatarUrl: userProfile.avatarUrl,
+                        country: userProfile.country
+                    }));
+                }
+
                 // Enregistrer la clé API, le pseudo/ID utilisateur et l'état
                 localStorage.setItem('usines_sim_api_key', apiKey);
                 localStorage.setItem('usines_sim_api_user_id', usernameOrId);
                 syncGlobalConfig();
                 saveState();
+                
+                renderPlayerProfile();
 
                 // Rafraîchir les composants graphiques
                 renderSkills();
@@ -3079,12 +3511,14 @@
                             const regionsMap = JSON.parse(savedRegions);
                             const region = regionsMap[factory.regionId];
                             if (region) {
-                                regionName = region.name || 'Sans nom';
+                                const escapedRegionName = escapeHTML(region.name || 'Sans nom');
                                 const country = countries.find(c => c._id === region.country);
                                 if (country) {
                                     const initialCountry = countries.find(c => c._id === region.initialCountry);
                                     if (initialCountry && initialCountry._id !== country._id) {
-                                        regionName = `${region.name} (Occupé par ${country.name})`;
+                                        regionName = `${escapedRegionName} (Occupé par ${escapeHTML(country.name)})`;
+                                    } else {
+                                        regionName = escapedRegionName;
                                     }
                                     countryFlag = getFlagEmoji(country.code);
                                     
@@ -3123,26 +3557,46 @@
                         }
                     }
 
+                    const maxBonusForRes = resources[factory.productionType] ? resources[factory.productionType].maxBonus : 0;
+                    const isOptimisable = computedBonus < maxBonusForRes;
+                    const optimisableWarning = isOptimisable 
+                        ? ` <span style="color: var(--warning); margin-left: 4px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 2px;" title="Optimisable ! Le bonus maximum théorique pour cette ressource est de ${maxBonusForRes.toFixed(2)}%. Déplacez votre usine dans une région avec gisement et bonus de pays.">⚠️ Optimisable (max : ${maxBonusForRes.toFixed(2)}%)</span>` 
+                        : '';
+
                     regionInfoHtml = `
-                        <div style="font-size: 0.8rem; color: var(--accent); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                        <div style="font-size: 0.8rem; color: var(--accent); margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; cursor: help;" title="${breakdownTooltip}">
                             <span>📍 ${regionName} ${countryFlag}</span>
+                            ${optimisableWarning}
                         </div>
                     `;
+
+                    const labelWarning = isOptimisable 
+                        ? `<span style="font-size: 0.7rem; color: var(--warning); font-weight: bold;" title="Le bonus de zone peut être augmenté jusqu'à ${maxBonusForRes.toFixed(2)}% en déplaçant l'usine.">⚠️ Optimisable (max : ${maxBonusForRes.toFixed(2)}%)</span>` 
+                        : `<span style="font-size: 0.7rem; color: var(--text-muted); text-transform: none;" title="${breakdownTooltip}">⚙️ Auto</span>`;
 
                     zoneBonusInputHtml = `
                         <div class="form-group">
                             <label style="display: flex; justify-content: space-between; align-items: center;">
                                 <span>Bonus de Zone (%)</span>
-                                <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: none;" title="${breakdownTooltip}">⚙️ Auto</span>
+                                ${labelWarning}
                             </label>
-                            <input type="text" readonly disabled value="${computedBonus.toFixed(2)}%" style="background: rgba(255,255,255,0.03); color: var(--accent); border-color: rgba(255,255,255,0.05); font-weight: bold; cursor: not-allowed;" title="${breakdownTooltip}">
+                            <input type="text" readonly disabled value="${computedBonus.toFixed(2)}%" style="background: rgba(255,255,255,0.03); color: ${isOptimisable ? 'var(--warning)' : 'var(--accent)'}; border-color: ${isOptimisable ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255,255,255,0.05)'}; font-weight: bold; cursor: not-allowed;" title="${breakdownTooltip}">
                         </div>
                     `;
                 } else {
+                    const maxBonusForRes = (factory.productionType !== 'inactif' && resources[factory.productionType]) ? resources[factory.productionType].maxBonus : 0;
+                    const isOptimisable = factory.productionType !== 'inactif' && computedBonus < maxBonusForRes;
+                    const labelWarning = isOptimisable 
+                        ? `<span style="font-size: 0.7rem; color: var(--warning); font-weight: bold;" title="Le bonus de zone maximum théorique est de ${maxBonusForRes.toFixed(2)}% pour cette ressource.">⚠️ Max théorique : ${maxBonusForRes.toFixed(2)}%</span>` 
+                        : '';
+
                     zoneBonusInputHtml = `
                         <div class="form-group">
-                            <label>Bonus de Zone (%)</label>
-                            <input type="number" min="0" step="0.5" placeholder="Ex: 10" value="${factory.zoneBonus}" onchange="changeZoneBonus('${factory.id}', this.value)">
+                            <label style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Bonus de Zone (%)</span>
+                                ${labelWarning}
+                            </label>
+                            <input type="number" min="0" step="0.5" placeholder="Ex: 10" value="${factory.zoneBonus}" style="${isOptimisable ? 'color: var(--warning); border-color: rgba(245,158,11,0.2);' : ''}" onchange="changeZoneBonus('${factory.id}', this.value)">
                         </div>
                     `;
                 }
@@ -3253,7 +3707,7 @@
                             workersHtml += `
                                 <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; padding: 10px; line-height: 1.4;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem;">${w.username}</span>
+                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem;">${escapeHTML(w.username)}</span>
                                         <span title="${countryName}" style="font-size: 1.1rem; cursor: help;">${flag}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted);">
@@ -3293,7 +3747,7 @@
                             workersHtml += `
                                 <div style="background: rgba(147, 51, 234, 0.04); border: 1px dashed rgba(147, 51, 234, 0.3); border-radius: 6px; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; gap: 6px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-weight: 700; color: var(--warning); font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">🤖 ${w.username}</span>
+                                        <span style="font-weight: 700; color: var(--warning); font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">🤖 ${escapeHTML(w.username)}</span>
                                         <button class="btn btn-secondary btn-sm" style="padding: 2px 6px; border-color: rgba(244,63,94,0.3); color: var(--danger); font-size: 0.75rem;" onclick="deleteSimulatedWorker('${factory.id}', '${w.id}')">🗑️</button>
                                     </div>
                                     
@@ -3366,7 +3820,7 @@
                 card.innerHTML = `
                     <div class="factory-header">
                         <div class="factory-title-wrap">
-                            <input type="text" value="${factory.name}" onchange="changeFactoryName('${factory.id}', this.value)" title="Cliquer pour renommer">
+                            <input type="text" value="${escapeHTML(factory.name)}" onchange="changeFactoryName('${factory.id}', this.value)" title="Cliquer pour renommer">
                             <span class="factory-level-badge">Niveau ${factory.level}</span>
                             ${regionInfoHtml}
                         </div>
@@ -3420,7 +3874,7 @@
                             ${totalWorkersCount > 0 ? `
                             <div class="factory-stat-row" style="font-size: 0.90rem; font-weight: 600; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                 <span>Bénéfice Industriel (Base) :</span>
-                                <strong style="font-family: var(--font-mono);">${calc.netProfit > 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/j</strong>
+                                <strong style="color: ${calc.netProfit >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${calc.netProfit >= 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/j</strong>
                             </div>
                             <div class="factory-stat-row" style="font-size: 0.90rem; font-weight: 600;">
                                 <span>Marge Salariés :</span>
@@ -3428,12 +3882,12 @@
                             </div>
                             <div class="factory-stat-row" style="font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                 <span>Bénéfice Réel Estimé :</span>
-                                <strong class="profit">${(calc.netProfit + totalWorkersMargin) >= 0 ? '+' : ''}${(calc.netProfit + totalWorkersMargin).toFixed(2)} €/jour</strong>
+                                <strong style="color: ${(calc.netProfit + totalWorkersMargin) >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${(calc.netProfit + totalWorkersMargin) >= 0 ? '+' : ''}${(calc.netProfit + totalWorkersMargin).toFixed(2)} €/jour</strong>
                             </div>
                             ` : `
                             <div class="factory-stat-row" style="font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                 <span>Bénéfice Net :</span>
-                                <strong class="profit">${calc.netProfit > 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/jour</strong>
+                                <strong style="color: ${calc.netProfit >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${calc.netProfit >= 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/jour</strong>
                             </div>
                             `}
                             ${factory.productionType !== 'inactif' ? `
@@ -3610,6 +4064,86 @@
             }
         }
 
+        // Récupère la localisation lisible d'une usine (Région + Drapeau ou Bonus)
+        function getFactoryLocationInfo(factory) {
+            if (factory.regionId) {
+                const savedCountries = localStorage.getItem('usines_sim_countries');
+                const savedRegions = localStorage.getItem('usines_sim_regions');
+                if (savedCountries && savedRegions) {
+                    try {
+                        const countries = JSON.parse(savedCountries);
+                        const regionsMap = JSON.parse(savedRegions);
+                        const region = regionsMap[factory.regionId];
+                        if (region) {
+                            const country = countries.find(c => c._id === region.country);
+                            const flag = country ? getFlagEmoji(country.code) : '';
+                            return `📍 ${region.name} ${flag}`;
+                        }
+                    } catch (e) {}
+                }
+            }
+            return factory.zoneBonus ? `+${parseFloat(factory.zoneBonus).toFixed(1)}% Zone` : '';
+        }
+
+        // Génère le détail du calcul du bonus de zone pour l'infobulle
+        function getFactoryZoneBonusTooltip(factory) {
+            if (!factory.regionId) {
+                return `Saisie manuelle : +${(parseFloat(factory.zoneBonus) || 0).toFixed(1)}%`;
+            }
+
+            const savedCountries = localStorage.getItem('usines_sim_countries');
+            const savedRegions = localStorage.getItem('usines_sim_regions');
+            if (!savedCountries || !savedRegions) {
+                return `Bonus configuré : +${(parseFloat(factory.zoneBonus) || 0).toFixed(1)}%`;
+            }
+
+            try {
+                const countries = JSON.parse(savedCountries);
+                const regionsMap = JSON.parse(savedRegions);
+                const region = regionsMap[factory.regionId];
+                if (!region) {
+                    return `Bonus configuré : +${(parseFloat(factory.zoneBonus) || 0).toFixed(1)}%`;
+                }
+
+                const country = countries.find(c => c._id === region.country);
+                if (!country) {
+                    return `Bonus configuré : +${(parseFloat(factory.zoneBonus) || 0).toFixed(1)}%`;
+                }
+
+                let strat = 0;
+                if (country.rankings && country.rankings.countryProductionBonus && country.rankings.countryProductionBonus.value !== undefined) {
+                    strat = parseFloat(country.rankings.countryProductionBonus.value) || 0;
+                } else if (country.strategicResources && country.strategicResources.bonuses && country.strategicResources.bonuses.productionPercent !== undefined) {
+                    strat = parseFloat(country.strategicResources.bonuses.productionPercent) || 0;
+                }
+
+                const API_ITEM_MAPPING = {
+                    "calcaire": "limestone", "fer": "iron", "petrole": "petroleum",
+                    "cereales": "grain", "betail": "livestock", "poisson": "fish",
+                    "beton": "concrete", "acier": "steel", "baril": "oil",
+                    "pain": "bread", "steak": "steak", "poisson_cuit": "cookedFish",
+                    "plomb": "lead", "munitions_legeres": "lightAmmo",
+                    "munitions_moyennes": "ammo", "munitions_lourdes": "heavyAmmo",
+                    "coca": "coca", "cocain": "cocain"
+                };
+                const apiCode = API_ITEM_MAPPING[factory.productionType];
+                const ethic = (country.specializedItem === apiCode) ? 30 : 0;
+
+                let deposit = 0;
+                if (region.deposit && region.deposit.type === apiCode) {
+                    const endsAt = new Date(region.deposit.endsAt);
+                    if (endsAt > new Date()) {
+                        deposit = parseFloat(region.deposit.bonusPercent) || 30;
+                    }
+                }
+
+                return `Détail : Base Pays +${strat.toFixed(1)}% | Spé Pays +${ethic.toFixed(1)}% | Gisement +${deposit.toFixed(1)}%`;
+            } catch (e) {
+                console.error("Erreur génération tooltip", e);
+                return `Bonus configuré : +${(parseFloat(factory.zoneBonus) || 0).toFixed(1)}%`;
+            }
+        }
+
         // Calcule dynamiquement le bonus de zone d'une usine basée sur sa région
         function getFactoryComputedZoneBonus(factory) {
             if (!factory.regionId) {
@@ -3674,13 +4208,16 @@
             if (factory.productionType === 'inactif') return 0;
             const res = resources[factory.productionType];
             if (!res) return 0;
+            const zoneBonusPercent = getFactoryComputedZoneBonus(factory);
+            let baseMaxSalary = 0;
             if (res.recipe === null) {
-                return res.price / res.ppCost;
+                baseMaxSalary = res.price / res.ppCost;
             } else {
                 const inputRes = resources[res.recipe.inputKey];
                 if (!inputRes) return 0;
-                return (res.price - (res.recipe.inputQty * inputRes.price)) / res.ppCost;
+                baseMaxSalary = (res.price - (res.recipe.inputQty * inputRes.price)) / res.ppCost;
             }
+            return baseMaxSalary * (1 + zoneBonusPercent / 100);
         }
 
         // ─── Formule de Calcul Unique d'Usine ────────────────────────
@@ -3735,7 +4272,11 @@
                     const dailySessions = (wEnergy * 2.4) / 10;
                     const dailyPpOutput = dailySessions * wProdWithFidelity;
                     
-                    workersPp += dailyPpOutput;
+                    // Les PP produits par l'ouvrier bénéficient du bonus de zone de l'usine
+                    const boostedPp = dailyPpOutput * (1 + zoneBonusPercent / 100);
+                    workersPp += boostedPp;
+                    
+                    // Le salaire est basé sur les PP bruts travaillés (énergie dépensée)
                     salariesCost += w.wage * dailyPpOutput;
                 });
             }
@@ -3749,7 +4290,11 @@
                     const dailySessions = (wEnergy * 2.4) / 10;
                     const dailyPpOutput = dailySessions * wProdWithFidelity;
                     
-                    workersPp += dailyPpOutput;
+                    // Les PP produits par l'ouvrier bénéficient du bonus de zone de l'usine
+                    const boostedPp = dailyPpOutput * (1 + zoneBonusPercent / 100);
+                    workersPp += boostedPp;
+                    
+                    // Le salaire est basé sur les PP bruts travaillés (énergie dépensée)
                     salariesCost += w.wage * dailyPpOutput;
                 });
             }
@@ -3822,6 +4367,7 @@
             const workersQtyProduced = qtyProduced - ownerQtyProduced;
             const workersRawCost = rawCost - ownerRawCost;
             const workersGrossRevenue = grossRevenue - ownerGrossRevenue;
+            const profitPerPp = ownerPp > 0 ? (ownerNetProfit / ownerPp) : 0;
 
             return {
                 totalPp,
@@ -3835,6 +4381,7 @@
                 ownerRawCost,
                 ownerGrossRevenue,
                 ownerNetProfit,
+                profitPerPp,
                 
                 workersPp,
                 workersQtyProduced,
@@ -3854,7 +4401,7 @@
             let totalWorkersMarginGlobal = 0;
             let totalSalariesCostGlobal = 0;
             
-            let bestFactoryName = "N/A";
+            let bestFactory = null;
             let maxFactoryProfit = -Infinity;
 
             const tableBody = document.getElementById('dashboard-table-body');
@@ -3866,13 +4413,13 @@
                 totalPp += calc.ownerPp;
                 totalNetProfit += calc.netProfit;
                 basePpSum += LEVEL_PP[f.level] || 0;
-                totalZoneBonusSum += parseFloat(f.zoneBonus) || 0;
+                totalZoneBonusSum += getFactoryComputedZoneBonus(f);
                 totalWorkersMarginGlobal += calc.workersMargin;
                 totalSalariesCostGlobal += calc.salariesCost;
 
                 if (calc.ownerNetProfit > maxFactoryProfit && f.productionType !== 'inactif') {
                     maxFactoryProfit = calc.ownerNetProfit;
-                    bestFactoryName = f.name;
+                    bestFactory = f;
                 }
 
                 // Insérer dans le tableau du tableau de bord
@@ -3890,8 +4437,19 @@
                         </div>
                     `;
 
+                    const computedBonus = getFactoryComputedZoneBonus(f);
+                    const maxBonusForRes = (f.productionType !== 'inactif' && resources[f.productionType]) ? resources[f.productionType].maxBonus : 0;
+                    const isOptimisable = f.productionType !== 'inactif' && computedBonus < maxBonusForRes;
+                    const optimisableWarning = isOptimisable 
+                        ? ` <span style="color: var(--warning); font-size: 0.7rem; cursor: help;" title="Bonus de zone optimisable ! Maximum théorique pour cette ressource : ${maxBonusForRes.toFixed(2)}%. Déplacez votre usine.">⚠️</span>`
+                        : '';
+
+                    const locInfo = getFactoryLocationInfo(f);
+                    const tooltip = getFactoryZoneBonusTooltip(f);
+                    const regionText = locInfo ? `<br><span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal; cursor: help;" title="${tooltip}">${escapeHTML(locInfo)}</span>${optimisableWarning}` : '';
+
                     row.innerHTML = `
-                        <td style="font-weight: 600;">${f.name}</td>
+                        <td style="font-weight: 600;">${escapeHTML(f.name)}${regionText}</td>
                         <td class="mono">${f.level}</td>
                         <td>${prodNameHtml}</td>
                         <td><span class="badge ${f.supplyMode === 'buy' ? 'badge-primary' : 'badge-accent'}">${logisText}</span></td>
@@ -3911,7 +4469,11 @@
             const globalEstimatedProfit = totalNetProfit;
             const globalOwnerProfit = totalNetProfit - totalWorkersMarginGlobal;
             
-            document.getElementById('kpi-profit').innerText = `${globalEstimatedProfit >= 0 ? '+' : ''}${globalEstimatedProfit.toFixed(2)} €/j`;
+            const kpiProfit = document.getElementById('kpi-profit');
+            if (kpiProfit) {
+                kpiProfit.innerText = `${globalEstimatedProfit >= 0 ? '+' : ''}${globalEstimatedProfit.toFixed(2)} €/j`;
+                kpiProfit.style.color = globalEstimatedProfit >= 0 ? 'var(--accent)' : 'var(--danger)';
+            }
             
             const profitSubtext = document.querySelector('#kpi-profit + .kpi-subtext') || document.querySelector('#kpi-profit').nextElementSibling;
             if (profitSubtext) {
@@ -3926,19 +4488,61 @@
             document.getElementById('kpi-pp-sub').innerText = `Base : ${basePpSum} PP/j | Zone : +${gainZonePp.toFixed(1)} PP/j`;
             
             // Troisième carte KPI : Zone Bonus Moyen
-            document.getElementById('kpi-boosts').innerText = `${avgZoneBonus.toFixed(2)}%`;
-            const boostSubText = document.getElementById('kpi-boosts-sub');
-            if (boostSubText) {
-                boostSubText.innerText = `Moyenne sur ${factories.length} usine${factories.length > 1 ? 's' : ''}`;
-                boostSubText.style.color = "var(--text-muted)";
+            let totalMaxBonusSum = 0;
+            let activeFactoriesCount = 0;
+            let hasAnyOptimisableZone = false;
+            
+            factories.forEach(f => {
+                if (f.productionType !== 'inactif') {
+                    activeFactoriesCount++;
+                    const res = resources[f.productionType];
+                    if (res) {
+                        const computed = getFactoryComputedZoneBonus(f);
+                        const maxB = res.maxBonus || 0;
+                        totalMaxBonusSum += maxB;
+                        if (computed < maxB) {
+                            hasAnyOptimisableZone = true;
+                        }
+                    }
+                }
+            });
+            
+            const avgMaxBonus = activeFactoriesCount > 0 ? (totalMaxBonusSum / activeFactoriesCount) : 0;
+            const isAvgOptimisable = activeFactoriesCount > 0 && hasAnyOptimisableZone;
+
+            const kpiBoostsEl = document.getElementById('kpi-boosts');
+            if (kpiBoostsEl) {
+                kpiBoostsEl.innerHTML = `${avgZoneBonus.toFixed(2)}%${isAvgOptimisable ? ' <span style="color: var(--warning); font-size: 1.1rem; cursor: help;" title="Votre bonus de zone moyen est optimisable ! Le maximum théorique moyen est de ' + avgMaxBonus.toFixed(2) + '%. Déplacez certaines usines dans des zones avec gisements et bonus pays.">⚠️</span>' : ''}`;
             }
 
-            if (maxFactoryProfit > -Infinity && bestFactoryName !== "N/A") {
-                document.getElementById('kpi-best-factory').innerText = bestFactoryName;
-                document.getElementById('kpi-best-factory-sub').innerText = `Bénéfice : +${maxFactoryProfit.toFixed(2)} €/j`;
+            const boostSubText = document.getElementById('kpi-boosts-sub');
+            if (boostSubText) {
+                if (isAvgOptimisable) {
+                    boostSubText.innerHTML = `<span style="color: var(--warning); cursor: help;" title="Maximum théorique moyen : ${avgMaxBonus.toFixed(2)}%">⚠️ Optimisable (Max : ${avgMaxBonus.toFixed(1)}%)</span>`;
+                } else {
+                    boostSubText.innerText = `Moyenne sur ${factories.length} usine${factories.length > 1 ? 's' : ''}`;
+                    boostSubText.style.color = "var(--text-muted)";
+                }
+            }
+
+            if (maxFactoryProfit > -Infinity && bestFactory) {
+                document.getElementById('kpi-best-factory').innerText = bestFactory.name;
+                const locInfo = getFactoryLocationInfo(bestFactory);
+                const locStr = locInfo ? ` | ${locInfo}` : '';
+                const bestFactorySub = document.getElementById('kpi-best-factory-sub');
+                if (bestFactorySub) {
+                    bestFactorySub.innerText = `Bénéfice : +${maxFactoryProfit.toFixed(2)} €/j${locStr}`;
+                    bestFactorySub.title = getFactoryZoneBonusTooltip(bestFactory);
+                    bestFactorySub.style.cursor = 'help';
+                }
             } else {
                 document.getElementById('kpi-best-factory').innerText = "Aucune";
-                document.getElementById('kpi-best-factory-sub').innerText = "Bénéfice : 0.00 €/j";
+                const bestFactorySub = document.getElementById('kpi-best-factory-sub');
+                if (bestFactorySub) {
+                    bestFactorySub.innerText = "Bénéfice : 0.00 €/j";
+                    bestFactorySub.title = "";
+                    bestFactorySub.style.cursor = "default";
+                }
             }
 
             // Mettre à jour le KPI d'emploi du joueur
@@ -3971,7 +4575,11 @@
             }
             
             const sideNetProfit = document.getElementById('side-net-profit');
-            if (sideNetProfit) sideNetProfit.innerText = `${globalEstimatedProfit >= 0 ? '+' : ''}${globalEstimatedProfit.toFixed(2)} €/j`;
+            if (sideNetProfit) {
+                sideNetProfit.innerText = `${globalEstimatedProfit >= 0 ? '+' : ''}${globalEstimatedProfit.toFixed(2)} €/j`;
+                sideNetProfit.style.color = globalEstimatedProfit >= 0 ? 'var(--accent)' : 'var(--danger)';
+                sideNetProfit.style.textShadow = globalEstimatedProfit >= 0 ? '0 0 8px rgba(16, 185, 129, 0.2)' : '0 0 8px rgba(244, 63, 94, 0.2)';
+            }
         }
 
         function calculateAllResourceEfficiencies() {
@@ -4105,56 +4713,6 @@
 
         // ─── Rendu de la page d'Optimisation & ROI ───────────────────
         function renderOptimizer() {
-            // Calculer le classement de rentabilité
-            const effs = calculateAllResourceEfficiencies();
-            const rankList = document.getElementById('opt-rank-list');
-            rankList.innerHTML = '';
-
-            effs.forEach((e, idx) => {
-                const item = document.createElement('div');
-                item.className = 'profitability-rank-item';
-                
-                // Mettre en vert si c'est hyper rentable
-                if (idx === 0) item.classList.add('active');
-
-                const cleanName = e.name.replace(' (Achat Intrant)', '').replace(' (Interne/Autosuffisant)', '').replace(' (Ext.)', '');
-                const modeLabel = e.mode === 'self' ? 'Interne' : (e.name.includes('Achat') ? 'Achat Marché' : 'Direct');
-
-                item.innerHTML = `
-                    <span><strong>#${idx + 1}</strong> ${cleanName} <small style="color: var(--text-muted);">(${modeLabel})</small></span>
-                    <span class="rank-val">${e.efficiency.toFixed(4)} €/PP</span>
-                `;
-                rankList.appendChild(item);
-            });
-
-            // Calculer le profit actuel vs optimisé
-            let currentDailyProfit = factories.reduce((sum, f) => sum + calculateSingleFactory(f).netProfit, 0);
-
-            // Pour optimiser, on trouve la ressource la plus rentable
-            const bestStrategy = effs[0]; // La plus rentable unitaire
-            
-            // Calculer la production optimisée avec la meilleure ressource
-            let optimizedDailyProfit = 0;
-            
-            factories.forEach(f => {
-                // On simule que l'usine fabrique le produit 'bestStrategy.key'
-                let tempFactory = {
-                    level: f.level,
-                    productionType: bestStrategy.key,
-                    supplyMode: bestStrategy.recipe ? bestStrategy.mode : 'buy',
-                    zoneBonus: f.zoneBonus
-                };
-
-                const calc = calculateSingleFactory(tempFactory);
-                optimizedDailyProfit += calc.netProfit;
-            });
-
-            document.getElementById('opt-current-profit').innerText = `${currentDailyProfit.toFixed(2)} €/jour`;
-            document.getElementById('opt-future-profit').innerText = `${optimizedDailyProfit.toFixed(2)} €/jour`;
-            
-            const diffPercent = currentDailyProfit > 0 ? ((optimizedDailyProfit - currentDailyProfit) / currentDailyProfit * 100) : 100;
-            document.getElementById('opt-percent-gain').innerText = `+${diffPercent.toFixed(0)}% de profit`;
-
             // Rendu de la liste ROI
             renderRoiPlanner();
 
@@ -4163,32 +4721,6 @@
 
             // Rendu du plan d'expansion vers 12 usines
             renderExpansionPlan();
-            
-        }
-
-        
-
-        // Algorithme d'optimisation en un clic
-        function applyOptimization() {
-            const effs = calculateAllResourceEfficiencies();
-            if (effs.length === 0) return;
-
-            const bestStrategy = effs[0];
-            
-            factories.forEach(f => {
-                f.productionType = bestStrategy.key;
-                if (resources[bestStrategy.key].recipe !== null) {
-                    f.supplyMode = bestStrategy.mode;
-                }
-            });
-
-            saveState();
-            renderFactories();
-            updateCalculations();
-            updateChart();
-            renderOptimizer();
-            showToast("Empire optimisé au rendement maximum !");
-            navigate('dashboard');
         }
 
         // Rendu du planificateur de ROI pour les améliorations
@@ -4227,17 +4759,23 @@
                         const dailyProfitGain = calcNext.netProfit - calcCurrent.netProfit;
                         const paybackDays = dailyProfitGain > 0 ? (euroCost / dailyProfitGain) : Infinity;
 
+                        const loc = getFactoryLocationInfo(f);
+                        const resName = resources[f.productionType] ? resources[f.productionType].name : '';
+                        const labelDetails = [resName, escapeHTML(loc)].filter(Boolean).join(', ');
+                        const dispName = labelDetails ? `${escapeHTML(f.name)} (${labelDetails})` : escapeHTML(f.name);
+
                         options.push({
                             type: 'upgrade',
                             factoryIndex: idx,
                             factoryId: f.id,
-                            factoryName: f.name,
+                            factoryName: dispName,
                             currentLevel: currentLvl,
                             nextLevel: nextLvl,
                             costText: `Coût : ${steelCost} Acier (~${euroCost.toFixed(2)} €)`,
                             dailyProfitGain: dailyProfitGain,
                             paybackDays: paybackDays,
-                            euroCost: euroCost
+                            euroCost: euroCost,
+                            tooltip: getFactoryZoneBonusTooltip(f)
                         });
                     }
                 });
@@ -4286,8 +4824,10 @@
                 if (bestOption.type === 'upgrade') {
                     simFactories[bestOption.factoryIndex].level = bestOption.nextLevel;
                 } else if (bestOption.type === 'construct') {
+                    const newId = 'sim-new-' + step;
+                    bestOption.factoryId = newId;
                     const newF = {
-                        id: 'sim-new-' + step,
+                        id: newId,
                         name: `Usine ${simFactories.length + 1} (Simulée)`,
                         level: 1,
                         productionType: bestOption.tempFactory.productionType,
@@ -4307,36 +4847,163 @@
                         ✔️ Toutes vos usines sont au niveau maximum (Niveau 7).
                     </div>
                 `;
-                return;
+            } else {
+                proposedUpgrades.forEach((up, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'roi-item';
+                    if (up.tooltip) {
+                        item.title = up.tooltip;
+                        item.style.cursor = 'help';
+                    }
+                    
+                    // Color badge based on payback duration
+                    let badgeClass = 'badge-accent';
+                    if (up.paybackDays > 100) badgeClass = 'badge-danger';
+                    else if (up.paybackDays > 40) badgeClass = 'badge-primary';
+
+                    item.innerHTML = `
+                        <div class="roi-info">
+                            <div style="font-weight: 700; color: #fff; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                                <span>#${idx + 1}</span> ${up.factoryName} 
+                                <span class="mono" style="color: var(--text-muted); font-size: 0.72rem;">(Lvl ${up.currentLevel} ➔ ${up.nextLevel})</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                ${up.costText} | Gain : <strong style="color: var(--accent);">+${up.dailyProfitGain.toFixed(2)} €/j</strong>
+                            </div>
+                        </div>
+                        <div class="roi-value" style="text-align: right;">
+                            <span class="badge ${badgeClass}" style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 4px 8px;">
+                                ROI : ${up.paybackDays.toFixed(1)} j
+                            </span>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
             }
 
-            proposedUpgrades.forEach((up, idx) => {
-                const item = document.createElement('div');
-                item.className = 'roi-item';
+            // Générer le Plan d'Action Individuel par Usine
+            const goalsContainer = document.getElementById('roi-factory-goals-list');
+            if (goalsContainer) {
+                goalsContainer.innerHTML = '';
                 
-                // Color badge based on payback duration
-                let badgeClass = 'badge-accent';
-                if (up.paybackDays > 100) badgeClass = 'badge-danger';
-                else if (up.paybackDays > 40) badgeClass = 'badge-primary';
+                let factoryTargets = {};
+                factories.forEach(f => {
+                    factoryTargets[f.id] = {
+                        id: f.id,
+                        name: f.name,
+                        level: f.level,
+                        productionType: f.productionType,
+                        supplyMode: f.supplyMode,
+                        zoneBonus: getFactoryComputedZoneBonus(f),
+                        targetLevel: f.level,
+                        steps: [],
+                        roiDaysList: [],
+                        isNew: false
+                    };
+                });
 
-                item.innerHTML = `
-                    <div class="roi-info">
-                        <div style="font-weight: 700; color: #fff; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-                            <span>#${idx + 1}</span> ${up.factoryName} 
-                            <span class="mono" style="color: var(--text-muted); font-size: 0.72rem;">(Lvl ${up.currentLevel} ➔ ${up.nextLevel})</span>
+                proposedUpgrades.forEach((up, idx) => {
+                    if (up.type === 'construct') {
+                        factoryTargets[up.factoryId] = {
+                            id: up.factoryId,
+                            name: up.factoryName,
+                            level: 0,
+                            productionType: up.tempFactory.productionType,
+                            supplyMode: up.tempFactory.supplyMode,
+                            zoneBonus: up.tempFactory.zoneBonus,
+                            targetLevel: 1,
+                            steps: [idx + 1],
+                            roiDaysList: [up.paybackDays],
+                            isNew: true
+                        };
+                    } else if (up.type === 'upgrade') {
+                        const target = factoryTargets[up.factoryId];
+                        if (target) {
+                            target.targetLevel = Math.max(target.targetLevel, up.nextLevel);
+                            target.steps.push(idx + 1);
+                            target.roiDaysList.push(up.paybackDays);
+                        }
+                    }
+                });
+
+                const targetsList = Object.values(factoryTargets);
+                if (targetsList.length === 0) {
+                    goalsContainer.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 0.85rem;">
+                            ⚠️ Aucune usine configurée pour le plan d'action.
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                            ${up.costText} | Gain : <strong style="color: var(--accent);">+${up.dailyProfitGain.toFixed(2)} €/j</strong>
-                        </div>
-                    </div>
-                    <div class="roi-value" style="text-align: right;">
-                        <span class="badge ${badgeClass}" style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 4px 8px;">
-                            ROI : ${up.paybackDays.toFixed(1)} j
-                        </span>
-                    </div>
-                `;
-                listContainer.appendChild(item);
-            });
+                    `;
+                } else {
+                    targetsList.forEach(target => {
+                        const card = document.createElement('div');
+                        card.style.cssText = 'background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 6px;';
+                        
+                        const resName = resources[target.productionType] ? resources[target.productionType].name : '';
+                        const maxBonusForRes = resources[target.productionType] ? resources[target.productionType].maxBonus : 0;
+                        const isOptimisable = target.productionType !== 'inactif' && target.zoneBonus < maxBonusForRes;
+                        const zoneWarning = isOptimisable 
+                            ? ` <span style="color: var(--warning); cursor: help;" title="Ce bonus de zone est optimisable ! Le maximum théorique pour cette ressource est de ${maxBonusForRes.toFixed(2)}%. Déplacez votre usine.">⚠️ Optimisable</span>` 
+                            : '';
+                        const zoneText = target.zoneBonus > 0 ? ` (+${target.zoneBonus.toFixed(1)}% Zone)${zoneWarning}` : (isOptimisable ? zoneWarning : '');
+                        
+                        let statusBadge = '';
+                        let adviceText = '';
+                        
+                        if (target.isNew) {
+                            if (target.targetLevel > 1) {
+                                statusBadge = `<span class="badge badge-accent" style="font-size: 0.68rem; padding: 2px 6px;">🔨 Construire & Monter</span>`;
+                                adviceText = `Construire à l'étape <strong>#${target.steps[0]}</strong> puis monter <strong>Lvl 1 ➔ ${target.targetLevel}</strong> (étapes <strong>#${target.steps.slice(1).join(', #')}</strong>).`;
+                            } else {
+                                statusBadge = `<span class="badge badge-accent" style="font-size: 0.68rem; padding: 2px 6px;">🔨 À Construire</span>`;
+                                adviceText = `Construction recommandée à l'étape <strong>#${target.steps[0]}</strong>. ROI estimé : <strong>${target.roiDaysList[0].toFixed(1)} jours</strong>.`;
+                            }
+                        } else {
+                            if (target.level < target.targetLevel) {
+                                statusBadge = `<span class="badge badge-warning" style="font-size: 0.68rem; padding: 2px 6px;">⚡ À Améliorer</span>`;
+                                const avgRoi = target.roiDaysList.reduce((a, b) => a + b, 0) / target.roiDaysList.length;
+                                adviceText = `Améliorer <strong>Lvl ${target.level} ➔ ${target.targetLevel}</strong> (étapes <strong>#${target.steps.join(', #')}</strong>). ROI moyen : <strong>${avgRoi.toFixed(1)} jours</strong>.`;
+                            } else {
+                                if (target.level >= 6) {
+                                    statusBadge = `<span class="badge badge-success" style="font-size: 0.68rem; padding: 2px 6px; background: rgba(16, 185, 129, 0.15); color: var(--accent);">✔️ Optimal</span>`;
+                                    adviceText = `Niveau optimal (${target.level}). Ne pas monter au Niveau 7 avant d'avoir 12 usines Lvl 6.`;
+                                } else {
+                                    statusBadge = `<span class="badge badge-primary" style="font-size: 0.68rem; padding: 2px 6px; background: rgba(59, 130, 246, 0.15); color: #60a5fa;">⏳ Stable</span>`;
+                                    adviceText = `Niveau actuel (${target.level}) stable. D'autres actions ont un meilleur ROI immédiat.`;
+                                }
+                            }
+                        }
+
+                        // Détection déséquilibre Duo
+                        const resInfo = resources[target.productionType];
+                        if (resInfo && resInfo.recipe) {
+                            const inputKey = resInfo.recipe.inputKey;
+                            const inputRes = resources[inputKey];
+                            const matchingRawTarget = targetsList.find(t => t.productionType === inputKey);
+                            if (matchingRawTarget) {
+                                const levelDiff = Math.abs(target.targetLevel - matchingRawTarget.targetLevel);
+                                if (levelDiff > 0) {
+                                    adviceText += `<br><span style="font-size: 0.7rem; color: var(--warning); display: block; margin-top: 4px; font-weight: 500;">⚖️ Équilibre Duo : Pensez à aligner avec votre usine de <strong>${inputRes.name}</strong> (Cible : Lvl ${matchingRawTarget.targetLevel}) pour maintenir l'autosuffisance.</span>`;
+                                }
+                            }
+                        }
+
+                        card.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <strong style="color: #fff; font-size: 0.82rem;">${escapeHTML(target.name)}</strong>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">${resName}${zoneText}</span>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <div style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; margin-top: 2px;">
+                                🎯 Niveau : <strong style="color: #fff;">Lvl ${target.level}</strong> ➔ Cible : <strong style="color: var(--accent);">Lvl ${target.targetLevel}</strong>
+                                <p style="margin: 4px 0 0 0; color: rgba(255,255,255,0.7);">${adviceText}</p>
+                            </div>
+                        `;
+                        goalsContainer.appendChild(card);
+                    });
+                }
+            }
         }
 
         // ─── Rendu des Compétences ──────────────────────────────────
@@ -4547,15 +5214,16 @@
             if (!costSkillsDiv || !productionPathDiv) return;
 
             const currentCount = factories.length;
-            if (currentCount >= 12) {
+            const allAtLevel7 = currentCount >= 12 && factories.every(f => f.level >= 7);
+            if (allAtLevel7) {
                 costSkillsDiv.innerHTML = `
                     <div style="text-align: center; color: var(--accent); padding: 20px 0; font-weight: 600;">
-                        🎉 Félicitations ! Vous possédez déjà ${currentCount} usines (maximum de 12 atteint).
+                        🎉 Félicitations ! Vous possédez déjà ${currentCount} usines au Niveau 7 (maximum atteint).
                     </div>
                 `;
                 productionPathDiv.innerHTML = `
                     <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">
-                        Votre empire industriel est complet. Aucun plan d'expansion n'est requis.
+                        Votre empire industriel est complet et toutes vos usines sont au Niveau 7.
                     </div>
                 `;
                 document.getElementById('expansion-roadmap').innerHTML = '';
@@ -4577,6 +5245,7 @@
             }
 
             const betonPrice = resources.beton ? resources.beton.price : 1.64;
+            const priceAcier = resources.acier ? resources.acier.price : 1.61;
             const totalEuroNeeded = totalBetonNeeded * betonPrice;
 
             // 2. Calcul de la progression des compétences nécessaires
@@ -4588,6 +5257,70 @@
             const remainingPoints = totalPoints - spentPoints;
             const missingPoints = Math.max(0, neededPoints - remainingPoints);
             const extraLvlNeeded = Math.ceil(missingPoints / 4);
+
+            const currentLvl = playerSkills.playerLevel || 18;
+            const targetLvl = currentLvl + extraLvlNeeded;
+
+            const savedProfile = localStorage.getItem('usines_sim_player_profile');
+            let currentXp = 0;
+            let hasRealXp = false;
+            if (savedProfile) {
+                try {
+                    const prof = JSON.parse(savedProfile);
+                    if (prof.level === currentLvl && prof.totalXp !== undefined) {
+                        currentXp = prof.totalXp;
+                        hasRealXp = true;
+                    }
+                } catch (e) {}
+            }
+            if (!hasRealXp) {
+                currentXp = getXpNeededToReachLevel(currentLvl);
+            }
+
+            const targetXp = getXpNeededToReachLevel(targetLvl);
+            const xpNeeded = Math.max(0, targetXp - currentXp);
+            
+            // 200 XP/j + 600 XP/semaine = 2000 XP/semaine (285.71 XP/j)
+            const xpPerDay = 2000 / 7;
+            const totalDaysNeeded = xpNeeded / xpPerDay;
+
+            let timeEstimateHtml = '';
+            if (missingPoints > 0) {
+                const weeks = Math.floor(totalDaysNeeded / 7);
+                const days = Math.round(totalDaysNeeded % 7);
+                let timeStr = '';
+                if (weeks > 0) {
+                    timeStr += `${weeks} semaine${weeks > 1 ? 's' : ''}`;
+                    if (days > 0) {
+                        timeStr += ` et ${days} jour${days > 1 ? 's' : ''}`;
+                    }
+                } else {
+                    timeStr += `${Math.ceil(totalDaysNeeded)} jour${Math.ceil(totalDaysNeeded) > 1 ? 's' : ''}`;
+                }
+
+                const formatXp = (val) => {
+                    if (val >= 1000) {
+                        return (val / 1000).toFixed(2).replace(/\.00$/, '').replace(/\.([0-9])0$/, '.$1') + 'K';
+                    }
+                    return val;
+                };
+
+                const currentXpStr = formatXp(currentXp);
+                const targetXpStr = formatXp(targetXp);
+                const xpNeededStr = formatXp(xpNeeded);
+
+                const xpDetail = hasRealXp
+                    ? `(XP actuelle : <strong>${currentXpStr}</strong> / Requis Lvl ${targetLvl} : <strong>${targetXpStr}</strong>, soit <strong>${xpNeededStr} XP</strong> manquants)`
+                    : `(XP estimée : <strong>${currentXpStr}</strong> / Requis Lvl ${targetLvl} : <strong>${targetXpStr}</strong>, soit <strong>${xpNeededStr} XP</strong> manquants)`;
+
+                timeEstimateHtml = `
+                    <div style="margin-top: 8px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 6px; line-height: 1.45;">
+                        ⏳ Progression Niv. ${targetLvl} via les quêtes : <strong style="color: var(--warning);">${timeStr}</strong><br>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">${xpDetail}</span><br>
+                        <span style="font-size: 0.68rem; display: block; margin-top: 2.5px; color: var(--text-muted);">Sur la base de <strong>2000 XP / semaine</strong> (200 XP/j de journalières + 600 XP hebdomadaires).</span>
+                    </div>
+                `;
+            }
 
             costSkillsDiv.innerHTML = `
                 <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -4624,6 +5357,7 @@
                             ${missingPoints > 0 ? `
                                 <div style="color: var(--danger); font-weight: 600; margin-top: 8px; padding: 6px 8px; background: rgba(244, 63, 94, 0.08); border-left: 3px solid var(--danger); border-radius: 4px; font-size: 0.75rem;">
                                     ⚠️ Il vous manque <strong>${missingPoints} points</strong> pour la Limite. Montez de <strong>${extraLvlNeeded} niveaux</strong> de joueur ou réallouez vos compétences.
+                                    ${timeEstimateHtml}
                                 </div>
                             ` : `
                                 <div style="color: var(--accent); font-weight: 600; margin-top: 8px; padding: 6px 8px; background: rgba(16, 185, 129, 0.08); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 0.75rem;">
@@ -4662,26 +5396,62 @@
                 const cleanBestName = bestEff.name.replace(' (Achat Intrant)', '').replace(' (Interne/Autosuffisant)', '').replace(' (Ext.)', '');
                 const modeLabel = bestEff.mode === 'self' ? 'Interne' : (bestEff.name.includes('Achat') ? 'Achat Marché' : 'Direct');
 
+                const costL56 = (320 * priceAcier / 24).toFixed(2);
+                const costL67 = (640 * priceAcier / 24).toFixed(2);
+                const costN7 = (350 * betonPrice / 24).toFixed(2);
+                const costN12 = (600 * betonPrice / 24).toFixed(2);
+
                 productionPathDiv.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 14px;">
-                        <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff;">📈 Rendement Moyen & Marché</h4>
-                        <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px; font-size: 0.8rem; line-height: 1.45;">
-                            <div style="margin-bottom: 6px;">
-                                Ressource la plus rentable actuellement : <strong style="color: var(--accent);">${cleanBestName}</strong> via <strong>${modeLabel}</strong>.
+                        <div>
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 8px;">📈 Rendement Moyen & Marché</h4>
+                            <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px; font-size: 0.8rem; line-height: 1.45;">
+                                <div style="margin-bottom: 6px;">
+                                    Ressource la plus rentable actuellement : <strong style="color: var(--accent);">${cleanBestName}</strong> via <strong>${modeLabel}</strong>.
+                                </div>
+                                <div style="margin-bottom: 6px;">
+                                    Rendement : <strong style="color: var(--accent); font-family: var(--font-mono);">${bestEff.efficiency.toFixed(4)} € / PP</strong>.
+                                </div>
+                                <div style="margin-bottom: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05);">
+                                    Bénéfice quotidien estimé (Usines + Auto-travail) : <strong style="color: #fff; font-family: var(--font-mono);">${currentDailyTotal.toFixed(2)} €/jour</strong>.
+                                </div>
                             </div>
-                            <div style="margin-bottom: 6px;">
-                                Rendement : <strong style="color: var(--accent); font-family: var(--font-mono);">${bestEff.efficiency.toFixed(4)} € / PP</strong>.
-                            </div>
-                            <div style="margin-bottom: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05);">
-                                Bénéfice quotidien estimé (Usines + Auto-travail) : <strong style="color: #fff; font-family: var(--font-mono);">${currentDailyTotal.toFixed(2)} €/jour</strong>.
+                        </div>
+
+                        <div>
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 8px;">⚖️ Arbitrage de Rentabilité (Améliorer vs Construire)</h4>
+                            <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px; font-size: 0.78rem; line-height: 1.45;">
+                                <ul style="margin: 0; padding-left: 16px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+                                    <li><strong>Améliorer (Niveau 1 à 6) :</strong> Priorité absolue. Augmenter une usine existante jusqu'au Niveau 5 (<strong>${(160 * priceAcier / 24).toFixed(2)} €/PP</strong>) ou Niveau 6 (<strong>${costL56} €/PP</strong>) est <strong>plus rentable</strong> que de construire une nouvelle usine (la 7ème coûte déjà <strong>${costN7} €/PP</strong>).</li>
+                                    <li><strong>Construire une nouvelle usine :</strong> Plus rentable que de passer au Niveau 7 (coût : <strong>${costL67} €/PP</strong>), alors que poser la 12ème usine coûte <strong>${costN12} €/PP</strong>. Montez vos usines au Niveau 6 avant de viser le Niveau 7.</li>
+                                    <li><strong>Ouvriers (Management) :</strong> Si vous avez des slots d'ouvriers inoccupés (compétence <i>Gestion</i>), poser une usine Lvl 1 devient prioritaire pour les y placer.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 `;
             } else {
+                const costL56 = (320 * priceAcier / 24).toFixed(2);
+                const costL67 = (640 * priceAcier / 24).toFixed(2);
+                const costN7 = (350 * betonPrice / 24).toFixed(2);
+                const costN12 = (600 * betonPrice / 24).toFixed(2);
+
                 productionPathDiv.innerHTML = `
-                    <div style="text-align: center; color: var(--text-muted); padding: 40px 0;">
-                        Indisponible. Veuillez configurer vos prix du marché.
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="text-align: center; color: var(--text-muted); padding: 20px 0; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+                            Veuillez configurer vos prix du marché pour le rendement.
+                        </div>
+
+                        <div>
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 8px;">⚖️ Arbitrage de Rentabilité (Améliorer vs Construire)</h4>
+                            <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px; font-size: 0.78rem; line-height: 1.45;">
+                                <ul style="margin: 0; padding-left: 16px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+                                    <li><strong>Améliorer (Niveau 1 à 6) :</strong> Priorité absolue. Augmenter une usine existante jusqu'au Niveau 5 (<strong>${(160 * priceAcier / 24).toFixed(2)} €/PP</strong>) ou Niveau 6 (<strong>${costL56} €/PP</strong>) est <strong>plus rentable</strong> que de construire une nouvelle usine (la 7ème coûte déjà <strong>${costN7} €/PP</strong>).</li>
+                                    <li><strong>Construire une nouvelle usine :</strong> Plus rentable que de passer au Niveau 7 (coût : <strong>${costL67} €/PP</strong>), alors que poser la 12ème usine coûte <strong>${costN12} €/PP</strong>. Montez vos usines au Niveau 6 avant de viser le Niveau 7.</li>
+                                    <li><strong>Ouvriers (Management) :</strong> Si vous avez des slots d'ouvriers inoccupés (compétence <i>Gestion</i>), poser une usine Lvl 1 devient prioritaire pour les y placer.</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -4692,25 +5462,34 @@
                     🗺️ Feuille de Route d'Expansion Spécialisée Marché
                 </h4>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
-                    Voici le plan d'expansion le plus rapide et le moins cher en ciblant la ressource la plus rentable du marché à chaque étape. Chaque usine est montée directement au <strong>Niveau 7</strong>.
+                    Voici la feuille de route d'expansion optimale. Pour maximiser votre retour sur investissement, chaque usine construite est d'abord montée au <strong>Niveau 6</strong>. Le passage global au <strong>Niveau 7</strong> est effectué lors de l'étape finale car l'acier requis y est moins rentable à court terme que la construction de nouvelles usines.
                 </p>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
             `;
 
-            // Calcul du cumul d'acier restant sur les usines actuelles pour atteindre le niveau 7
+            // Calcul du cumul d'acier restant sur les usines actuelles pour atteindre le niveau 6
             let existingSteelNeeded = 0;
             factories.forEach(f => {
-                for (let lvl = f.level; lvl < 7; lvl++) {
+                for (let lvl = f.level; lvl < 6; lvl++) {
                     existingSteelNeeded += UPGRADE_COSTS[lvl];
                 }
             });
 
+            // Calcul de l'acier nécessaire pour passer toutes les usines du Lvl 6 au Lvl 7
+            let steelLvl6to7 = 0;
+            factories.forEach(f => {
+                if (f.level < 7) {
+                    steelLvl6to7 += 640;
+                }
+            });
+            const newUsinesCount = 12 - currentCount;
+            steelLvl6to7 += newUsinesCount * 640;
+
             // Calcul de la zone moyenne actuelle
             let totalZoneBonusSum = 0;
-            factories.forEach(f => { totalZoneBonusSum += parseFloat(f.zoneBonus) || 0; });
+            factories.forEach(f => { totalZoneBonusSum += getFactoryComputedZoneBonus(f); });
             const avgZoneBonus = factories.length > 0 ? (totalZoneBonusSum / factories.length) : 0;
 
-            const priceAcier = resources.acier ? resources.acier.price : 1.61;
             const bestEfficiency = bestEff ? bestEff.efficiency : 0.09;
             const marketItem = bestEff ? bestEff.name.replace(' (Achat Intrant)', '').replace(' (Interne/Autosuffisant)', '').replace(' (Ext.)', '') : 'Pain';
 
@@ -4725,11 +5504,62 @@
                 const targetLimitLvl = i - 2;
                 const skillCost = getSkillCost(targetLimitLvl);
 
+                // Calcul du niveau requis
+                const minLevelWithReset = Math.ceil(skillCost / 4);
+                const otherSpent = getSpentSkillPoints() - getSkillCost(playerSkills.companiesLimit.level);
+                const requiredLevelNoReset = Math.ceil((otherSpent + skillCost) / 4);
+
+                // Estimation temps XP (sans reset)
+                let xpNoResetHtml = '';
+                if (currentLvl < requiredLevelNoReset) {
+                    const stepTargetXp = getXpNeededToReachLevel(requiredLevelNoReset);
+                    const stepXpNeeded = Math.max(0, stepTargetXp - currentXp);
+                    const stepDays = stepXpNeeded / (2000 / 7);
+                    
+                    const stepWeeks = Math.floor(stepDays / 7);
+                    const stepDaysRemainder = Math.round(stepDays % 7);
+                    let stepTimeStr = '';
+                    if (stepWeeks > 0) {
+                        stepTimeStr += `${stepWeeks} sem.`;
+                        if (stepDaysRemainder > 0) {
+                            stepTimeStr += ` et ${stepDaysRemainder} j.`;
+                        }
+                    } else {
+                        stepTimeStr += `${Math.ceil(stepDays)} j.`;
+                    }
+                    xpNoResetHtml = `<strong style="color: var(--danger);">Lvl ${requiredLevelNoReset}</strong> <span style="font-size: 0.7rem; color: var(--text-muted);">(manque ${requiredLevelNoReset - currentLvl} lvl, ~${stepTimeStr})</span>`;
+                } else {
+                    xpNoResetHtml = `<strong style="color: var(--accent);">Lvl ${requiredLevelNoReset}</strong> <span style="font-size: 0.7rem; color: var(--accent);">(Débloqué)</span>`;
+                }
+
+                // Estimation temps XP (avec reset)
+                let xpResetHtml = '';
+                if (currentLvl < minLevelWithReset) {
+                    const stepTargetXp = getXpNeededToReachLevel(minLevelWithReset);
+                    const stepXpNeeded = Math.max(0, stepTargetXp - currentXp);
+                    const stepDays = stepXpNeeded / (2000 / 7);
+                    
+                    const stepWeeks = Math.floor(stepDays / 7);
+                    const stepDaysRemainder = Math.round(stepDays % 7);
+                    let stepTimeStr = '';
+                    if (stepWeeks > 0) {
+                        stepTimeStr += `${stepWeeks} sem.`;
+                        if (stepDaysRemainder > 0) {
+                            stepTimeStr += ` et ${stepDaysRemainder} j.`;
+                        }
+                    } else {
+                        stepTimeStr += `${Math.ceil(stepDays)} j.`;
+                    }
+                    xpResetHtml = `<strong style="color: var(--warning);">Lvl ${minLevelWithReset}</strong> <span style="font-size: 0.7rem; color: var(--text-muted);">(~${stepTimeStr})</span>`;
+                } else {
+                    xpResetHtml = `<strong style="color: var(--accent);">Lvl ${minLevelWithReset}</strong> <span style="font-size: 0.7rem; color: var(--accent);">(Débloqué)</span>`;
+                }
+
                 // Coûts pour cette étape de transition
                 const concreteCost = 50 + 50 * (i - 1);
                 
                 // Si c'est la première étape, on doit également couvrir la mise à niveau des usines actuelles existantes!
-                let steelCost = 1260; // 1260 acier pour monter la nouvelle usine du niveau 1 au niveau 7
+                let steelCost = 620; // 620 acier pour monter la nouvelle usine du niveau 1 au niveau 6
                 if (i === currentCount + 1) {
                     steelCost += existingSteelNeeded;
                 }
@@ -4742,19 +5572,23 @@
                 cumEuro += euroCost;
                 cumDays += transitionDays;
 
-                const marketLayout = `<strong>${i}</strong> usine${i > 1 ? 's' : ''} produisant du <strong>${marketItem}</strong> (Niveau 7)`;
+                const marketLayout = `<strong>${i}</strong> usine${i > 1 ? 's' : ''} produisant du <strong>${marketItem}</strong> (Niveau 6)`;
 
                 roadmapHtml += `
                     <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
-                            <strong style="color: var(--accent); font-size: 0.95rem;">🏭 Étape : ${i} Usines Lvl Max</strong>
+                            <strong style="color: var(--accent); font-size: 0.95rem;">🏭 Étape : ${i} Usines Lvl 6</strong>
                             <span class="badge badge-primary" style="font-size: 0.65rem;">Lvl Limite ${targetLimitLvl}</span>
                         </div>
                         <div style="font-size: 0.78rem; line-height: 1.45; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
                             <div>
-                                ⚙️ Compétence requise : <strong style="color: #fff;">Limite Lvl ${targetLimitLvl}</strong> (Coût : <strong>${skillCost} pts</strong>).
+                                ⚙️ Compétence requise : <strong style="color: #fff;">Limite d'entreprise Lvl ${targetLimitLvl}</strong> (Coût : <strong>${skillCost} pts</strong>).
                             </div>
-                            <div style="padding: 6px 8px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; color: #fff;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); border-top: 1px dashed rgba(255,255,255,0.04); padding-top: 4px; margin-top: 2px;">
+                                🎯 <strong>Niv. Joueur requis (sans reset) :</strong> ${xpNoResetHtml}<br>
+                                🎯 <strong>Niv. Joueur requis (avec reset) :</strong> ${xpResetHtml}
+                            </div>
+                            <div style="padding: 6px 8px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; color: #fff; margin-top: 2px;">
                                 📈 <strong>Schéma Optimal :</strong><br>
                                 ${marketLayout}
                             </div>
@@ -4786,11 +5620,97 @@
                     </div>
                 `;
 
-                // Mettre à jour la profitabilité pour le calcul de l'étape suivante (considérant i usines maxées au Niveau 7)
-                // Capacité PP d'une usine niveau 7 = 168 PP/j.
-                const nextStepDailyProfit = (i * 168 + dailyPp) * bestEfficiency;
+                // Mettre à jour la profitabilité pour le calcul de l'étape suivante (considérant i usines maxées au Niveau 6)
+                // Capacité PP d'une usine niveau 6 = 144 PP/j.
+                const nextStepDailyProfit = (i * 144 + dailyPp) * bestEfficiency;
                 prevDailyProfit = nextStepDailyProfit > 0 ? nextStepDailyProfit : 0.01;
             }
+
+            // Si le joueur a déjà 12 usines (ou plus) mais certaines ne sont pas Lvl 6, on ajoute une étape de consolidation
+            if (currentCount >= 12 && existingSteelNeeded > 0) {
+                const euroCost = existingSteelNeeded * priceAcier;
+                const transitionDays = euroCost / prevDailyProfit;
+
+                cumSteel += existingSteelNeeded;
+                cumEuro += euroCost;
+                cumDays += transitionDays;
+
+                roadmapHtml += `
+                    <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">
+                            <strong style="color: var(--accent); font-size: 0.95rem;">🔧 Étape 1 : Consolidation au Niveau 6</strong>
+                            <span class="badge badge-primary" style="font-size: 0.65rem;">Lvl Limite 10</span>
+                        </div>
+                        <div style="font-size: 0.78rem; line-height: 1.45; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+                            <div>
+                                Mettez à niveau toutes vos usines existantes qui sont en dessous du <strong>Niveau 6</strong>.
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px dashed rgba(255,255,255,0.04); padding-top: 6px; margin-top: 2px;">
+                                <span>Coût Étape :</span>
+                                <span style="color: #fff;">0 Béton + ${existingSteelNeeded} Acier (~<strong>${euroCost.toFixed(2)} €</strong>)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; color: var(--accent);">
+                                <span>Temps Étape :</span>
+                                <strong>${transitionDays.toFixed(1)} jours</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Mettre à jour prevDailyProfit après la consolidation (12 usines Niveau 6)
+                const nextStepDailyProfit = (12 * 144 + dailyPp) * bestEfficiency;
+                prevDailyProfit = nextStepDailyProfit > 0 ? nextStepDailyProfit : 0.01;
+            }
+
+            // Étape finale : Passage de toutes les usines du Niveau 6 au Niveau 7
+            const euroCostL7 = steelLvl6to7 * priceAcier;
+            const transitionDaysL7 = euroCostL7 / prevDailyProfit;
+
+            cumSteel += steelLvl6to7;
+            cumEuro += euroCostL7;
+            cumDays += transitionDaysL7;
+
+            roadmapHtml += `
+                <div style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(99, 102, 241, 0.15); padding-bottom: 6px;">
+                        <strong style="color: var(--primary); font-size: 0.95rem;">🏆 Étape Finale : 12 Usines Lvl 7</strong>
+                        <span class="badge badge-accent" style="font-size: 0.65rem;">Lvl Limite 10</span>
+                    </div>
+                    <div style="font-size: 0.78rem; line-height: 1.45; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+                        <div>
+                            ⚙️ Compétence requise : <strong style="color: #fff;">Limite d'entreprise Lvl 10</strong> (Coût : <strong>55 pts</strong>).
+                        </div>
+                        <div style="padding: 6px 8px; background: rgba(99, 102, 241, 0.08); border-radius: 4px; color: #fff;">
+                            📈 <strong>Optimisation Maximale :</strong><br>
+                            Passage de 12 usines du Niveau 6 au <strong>Niveau 7</strong>.
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed rgba(99, 102, 241, 0.15); padding-top: 6px; margin-top: 2px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Coût Étape :</span>
+                                <span style="color: #fff;">0 Béton + ${steelLvl6to7} Acier (~<strong>${euroCostL7.toFixed(2)} €</strong>)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; color: var(--accent);">
+                                <span>Temps Étape :</span>
+                                <strong>${transitionDaysL7.toFixed(1)} jours</strong>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px dashed rgba(99, 102, 241, 0.15); padding-top: 6px; margin-top: 2px; font-size: 0.72rem; color: var(--text-muted);">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Cumul béton/acier :</span>
+                                <span>${cumConcrete} Béton | ${cumSteel} Acier</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Cumul coût Euros :</span>
+                                <span>~${cumEuro.toFixed(2)} €</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; color: var(--warning); font-weight: 600;">
+                                <span>Temps cumulé :</span>
+                                <span>${cumDays.toFixed(1)} jours</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             roadmapHtml += `</div>`;
             document.getElementById('expansion-roadmap').innerHTML = roadmapHtml;
@@ -4865,13 +5785,16 @@
                 const calc = calculateSingleFactory(f);
                 const efficiency = calc.profitPerPp;
                 const dailyProfit = dailyEntSessions * prodPp * efficiency;
+                const loc = getFactoryLocationInfo(f);
+                const label = [resources[f.productionType].name, escapeHTML(loc)].filter(Boolean).join(', ');
 
                 options.push({
-                    name: `Travailler dans : ${f.name} (${resources[f.productionType].name})`,
+                    name: `Travailler dans : ${escapeHTML(f.name)} (Lvl ${f.level}) (${label})`,
                     mode: f.supplyMode === 'buy' ? 'Achat des matières' : 'Production interne',
                     efficiency: efficiency,
                     dailyProfit: dailyProfit,
-                    desc: `Génère ${efficiency.toFixed(4)} € par PP. Produit ${(dailyEntSessions * prodPp / resources[f.productionType].ppCost).toFixed(1)} unités/jour.`
+                    desc: `Génère ${efficiency.toFixed(4)} € par PP. Produit ${(dailyEntSessions * prodPp / resources[f.productionType].ppCost).toFixed(1)} unités/jour.`,
+                    tooltip: getFactoryZoneBonusTooltip(f)
                 });
             });
 
@@ -4885,18 +5808,32 @@
                     factories.forEach(fa => {
                         if (fa.productionType === inputKey) {
                             const resA = resources[inputKey];
-                            const ppPerUnit = resB.ppCost + resB.recipe.inputQty * resA.ppCost;
+                            
+                            // Prendre en compte les bonus de zone réels des deux usines
+                            const zoneBonusA = getFactoryComputedZoneBonus(fa);
+                            const zoneBonusB = getFactoryComputedZoneBonus(fb);
+                            
+                            const ppA = resA.ppCost / (1 + zoneBonusA / 100);
+                            const ppB = resB.ppCost / (1 + zoneBonusB / 100);
+                            
+                            const ppPerUnit = ppB + (resB.recipe.inputQty * ppA);
                             const efficiency = resB.price / ppPerUnit;
-                            const propA = (resB.recipe.inputQty * resA.ppCost) / ppPerUnit;
-                            const propB = resB.ppCost / ppPerUnit;
+                            const propA = (resB.recipe.inputQty * ppA) / ppPerUnit;
+                            const propB = ppB / ppPerUnit;
                             const dailyProfit = dailyEntSessions * prodPp * efficiency;
 
+                            const locA = getFactoryLocationInfo(fa);
+                            const locB = getFactoryLocationInfo(fb);
+                            const labelA = [resA.name, escapeHTML(locA)].filter(Boolean).join(', ');
+                            const labelB = [resB.name, escapeHTML(locB)].filter(Boolean).join(', ');
+
                             options.push({
-                                name: `Duo : ${fb.name} (${resB.name}) + ${fa.name} (${resA.name})`,
+                                name: `Duo : ${escapeHTML(fb.name)} (${labelB}, Lvl ${fb.level}) + ${escapeHTML(fa.name)} (${labelA}, Lvl ${fa.level})`,
                                 mode: 'Intégration Autosuffisante',
                                 efficiency: efficiency,
                                 dailyProfit: dailyProfit,
-                                desc: `Génère ${efficiency.toFixed(4)} € par PP. Répartition idéale : ${(propA * 100).toFixed(0)}% des sessions dans ${fa.name} (matière brute) et ${(propB * 100).toFixed(0)}% dans ${fb.name} (transformation).`
+                                desc: `Génère ${efficiency.toFixed(4)} € par PP. Répartition idéale : ${(propA * 100).toFixed(0)}% des sessions dans ${fa.name} (matière brute, bonus zone : +${zoneBonusA.toFixed(1)}%) et ${(propB * 100).toFixed(0)}% dans ${fb.name} (transformation, bonus zone : +${zoneBonusB.toFixed(1)}%).`,
+                                tooltip: `Usine Transformation : ${getFactoryZoneBonusTooltip(fb)}\nUsine Matière Brute : ${getFactoryZoneBonusTooltip(fa)}`
                             });
                         }
                     });
@@ -4916,6 +5853,10 @@
                 options.forEach((opt, idx) => {
                     const card = document.createElement('div');
                     card.className = `work-rec-card ${idx === 0 ? 'best-work' : ''}`;
+                    if (opt.tooltip) {
+                        card.title = opt.tooltip;
+                        card.style.cursor = 'help';
+                    }
 
                     const prefix = idx === 0 ? '⭐ Recommandé : ' : '';
 
@@ -4952,30 +5893,21 @@
                 factories.forEach(f => {
                     if (f.productionType === 'inactif') return;
                     
-                    // Calcul de la marge par PP en mode transformation brute (achat intrants marché)
                     const res = resources[f.productionType];
-                    let workerProfitPerPp = 0;
-                    if (res) {
-                        if (res.recipe === null) {
-                            workerProfitPerPp = res.price / res.ppCost; // Extraction directe
-                        } else {
-                            const inputRes = resources[res.recipe.inputKey];
-                            workerProfitPerPp = (res.price - (res.recipe.inputQty * inputRes.price)) / res.ppCost; // Transformation
-                        }
-                    }
-
-                    const maxSalary = workerProfitPerPp; // Le salaire maximum par PP est égal au bénéfice de transformation par PP
+                    const zoneBonusPercent = getFactoryComputedZoneBonus(f);
+                    const maxSalary = getMaxRentableSalary(f);
                     const isProfitable = playerSkills.workerSalary < maxSalary;
 
                     const basePp = LEVEL_PP[f.level] || 0;
-                    const zoneBonusPercent = parseFloat(f.zoneBonus) || 0;
                     const capacityPp = basePp * (1 + zoneBonusPercent / 100);
 
                     const sessionsNeeded = capacityPp / playerSkills.workerProd;
                     const maxDailySessions = (playerSkills.workerEnergy * 2.4) / 10;
                     const sessionsWorked = Math.min(sessionsNeeded, maxDailySessions);
                     const ppWorked = sessionsWorked * playerSkills.workerProd;
-                    const dailyWorkerNetProfit = ppWorked * (workerProfitPerPp - playerSkills.workerSalary);
+                    
+                    // Rentabilité quotidienne générée par l'employé (gain avec bonus de zone - salaire brut)
+                    const dailyWorkerNetProfit = ppWorked * (maxSalary - playerSkills.workerSalary);
 
                     const minEnergy = capacityPp / (0.24 * playerSkills.workerProd);
                     const minProd = capacityPp / (0.24 * playerSkills.workerEnergy);
@@ -5001,9 +5933,12 @@
                     }
                     
                     const resName = res ? res.name : f.productionType;
+                    const loc = getFactoryLocationInfo(f);
+                    const label = [resName, escapeHTML(loc)].filter(Boolean).join(', ');
+                    const tooltip = getFactoryZoneBonusTooltip(f);
 
                     item.innerHTML = `
-                        <div style="font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 4px;">${f.name} (${resName})</div>
+                        <div style="font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 4px; cursor: help;" title="${tooltip}">${escapeHTML(f.name)} (${label})</div>
                         ${statusHtml}
                         <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; display: flex; flex-direction: column; gap: 2px;">
                             <div>Salaire max rentable : <strong style="color: #fff; font-family: var(--font-mono);">${maxSalary.toFixed(3)} €</strong> / PP</div>
