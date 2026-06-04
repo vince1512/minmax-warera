@@ -28,6 +28,7 @@
             --accent-glow: rgba(16, 185, 129, 0.2);
             --warning: #f59e0b;
             --danger: #f43f5e;
+            --info: #3b82f6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --sidebar-bg: #111827;
@@ -377,6 +378,10 @@
             background: var(--danger);
         }
 
+        .kpi-card.info::after {
+            background: var(--info);
+        }
+
         .kpi-label {
             font-size: 0.75rem;
             font-weight: 700;
@@ -414,6 +419,7 @@
 
         input[type="text"],
         input[type="number"],
+        input[type="password"],
         select {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -452,6 +458,7 @@
 
         input[type="text"]:focus,
         input[type="number"]:focus,
+        input[type="password"]:focus,
         select:focus {
             outline: none;
             border-color: var(--primary);
@@ -1316,6 +1323,11 @@
                     <div class="kpi-value" id="kpi-best-factory" style="font-size: 1.4rem; padding: 4px 0;">N/A</div>
                     <span class="kpi-subtext" id="kpi-best-factory-sub">Bénéfice : 0.00 €/j</span>
                 </div>
+                <div class="card kpi-card info">
+                    <span class="kpi-label">🛠️ Votre Emploi</span>
+                    <div class="kpi-value" id="kpi-player-workplace" style="font-size: 1.25rem; padding: 4px 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sans employeur</div>
+                    <span class="kpi-subtext" id="kpi-player-workplace-sub">Aucun contrat actif détecté</span>
+                </div>
             </div>
 
             <!-- List of factories -->
@@ -1337,7 +1349,8 @@
                                     <th>Chaîne Logistique</th>
                                     <th>Capacité PP</th>
                                     <th>Dépenses Matières</th>
-                                    <th>Recettes Brut</th>
+                                    <th>Dépenses Salaires</th>
+                                    <th>Recettes Brutes</th>
                                     <th>Bénéfice Net (j)</th>
                                 </tr>
                             </thead>
@@ -1505,24 +1518,6 @@
                     </div>
                 </div>
 
-                    <!-- Configuration des Bonus de Zone Max -->
-                    <div class="card">
-                        <div class="card-header-toggle" onclick="toggleCard(this)">
-                            <h3 style="font-size: 1.15rem; display: flex; align-items: center; gap: 8px; margin-bottom: 0;">
-                                ⚙️ Configuration des Bonus Max de Zone
-                            </h3>
-                            <span class="toggle-icon">▼</span>
-                        </div>
-                        <div class="card-body" style="margin-top: 16px; display: flex; flex-direction: column; gap: 16px;">
-                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4;">
-                                Définissez le bonus maximum de zone éligible (strategic resource + ethic industrialist +30%) pour chaque ressource afin de guider l'optimiseur et le planificateur ROI.
-                            </p>
-                            <div id="opt-bonus-inputs-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px;">
-                                <!-- Rendu dynamique -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- ROI Planner -->
                 <div class="card">
                     <div class="card-header-toggle" onclick="toggleCard(this)">
@@ -1670,13 +1665,9 @@
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">
                                 Synchronisez vos données de jeu (niveau, compétences et usines) en direct.
                             </p>
-                            <div class="form-group" style="margin-bottom: 12px;">
-                                <label>Clé API (wae_...)</label>
-                                <input type="text" id="api-key-input" placeholder="wae_api_key..." value="wae_c892ad954ab1f6ddf8cfda08e3b3955e44fb7207722cd1fb856e36eb06f25c32" title="Insérez votre clé API Profile > Paramètres">
-                            </div>
                             <div class="form-group" style="margin-bottom: 16px;">
                                 <label>Pseudo ou ID Joueur</label>
-                                <input type="text" id="api-user-id" placeholder="Pseudo (ex: Baboon) or ID" value="Baboon" title="Votre pseudo en jeu ou ID joueur">
+                                <input type="text" id="api-user-id" placeholder="Pseudo (ex: Baboon) or ID" value="" title="Votre pseudo en jeu ou ID joueur">
                             </div>
                             <button class="btn btn-primary" style="width: 100%;" onclick="syncWithAPI()">
                                 🔄 Synchroniser Maintenant
@@ -1794,6 +1785,57 @@
 
     <!-- ─── Script JavaScript ─── -->
     <script>
+        // ─── Icônes SVG des Ressources (générées d'après le jeu) ────
+        const RESOURCE_ICONS = {
+            calcaire: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M12 40 L24 16 L44 12 L52 32 L40 52 L18 48 Z" fill="#e0e0e0" stroke="#888" stroke-width="2"/><path d="M24 16 L32 36 L40 52" stroke="#888" stroke-width="1.5"/><path d="M44 12 L32 36" stroke="#888" stroke-width="1.5"/></svg>`,
+            fer: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M10 32 L20 12 L44 10 L54 30 L44 50 L18 52 Z" fill="#4a4a4a" stroke="#222" stroke-width="2"/><circle cx="25" cy="22" r="4" fill="#d35400"/><circle cx="38" cy="30" r="3" fill="#e67e22"/><circle cx="28" cy="42" r="4.5" fill="#d35400"/><circle cx="45" cy="18" r="3" fill="#e67e22"/></svg>`,
+            petrole: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M32 8 C32 8 14 34 14 44 C14 54 22 60 32 60 C42 60 50 54 50 44 C50 34 32 8 32 8 Z" fill="#111" stroke="#222" stroke-width="1.5"/><path d="M26 38 C26 38 20 44 26 48" stroke="#fff" stroke-linecap="round" stroke-width="2" opacity="0.3"/></svg>`,
+            cereales: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M16 28 C16 20 48 20 48 28 C48 40 44 56 32 58 C20 56 16 40 16 28 Z" fill="#d0a96c" stroke="#b28447" stroke-width="2"/><path d="M20 22 C25 24 39 24 44 22 C46 16 18 16 20 22 Z" fill="#9e7035"/><path d="M26 22 L24 14 M32 22 L32 12 M38 22 L40 14" stroke="#f1c40f" stroke-width="2" stroke-linecap="round"/></svg>`,
+            betail: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M12 22 L52 22 L52 44 L12 44 Z" fill="#fff" stroke="#ccc" stroke-width="1.5"/><path d="M18 22 C22 26 26 32 22 36 C18 32 16 26 18 22 Z M38 30 C42 34 46 38 40 42 C36 38 34 34 38 30 Z" fill="#5c4033"/><circle cx="16" cy="20" r="2" fill="#000"/><path d="M48 22 L56 24 L54 14 Z" fill="#ffa0a0"/><path d="M14 44 L14 56 M20 44 L20 56 M44 44 L44 56 M48 44 L48 56" stroke="#ccc" stroke-width="4" stroke-linecap="round"/></svg>`,
+            poisson: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M6 32 C12 22 36 20 48 28 L56 20 L54 44 L48 36 C36 44 12 42 6 32 Z" fill="#2ecc71" stroke="#27ae60" stroke-width="2"/><path d="M16 28 C22 25 36 25 42 30" stroke="#ffa0a0" stroke-width="4"/><circle cx="12" cy="28" r="2.5" fill="#000"/></svg>`,
+            coca: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M32 60 C32 60 12 36 12 22 C12 10 24 6 32 6 C40 6 52 10 52 22 C52 36 32 60 32 60 Z" fill="#27ae60" stroke="#219a52" stroke-width="2"/><path d="M32 60 L32 6" stroke="#1e7e43" stroke-width="2"/><path d="M32 48 L22 38 M32 38 L42 28 M32 28 L22 18 M32 18 L42 12" stroke="#1e7e43" stroke-width="1.5"/></svg>`,
+            beton: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><rect x="10" y="16" width="44" height="32" rx="4" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/><rect x="16" y="24" width="12" height="16" rx="2" fill="#2c3e50"/><rect x="36" y="24" width="12" height="16" rx="2" fill="#2c3e50"/></svg>`,
+            acier: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M10 14 L54 14 L54 22 L38 22 L38 42 L54 42 L54 50 L10 50 L10 42 L26 42 L26 22 L10 22 Z" fill="#7f8c8d" stroke="#606f7b" stroke-width="2"/><path d="M10 14 L26 22 L26 42 L10 50" stroke="#bdc3c7" stroke-width="1.5"/></svg>`,
+            baril: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><rect x="16" y="10" width="32" height="44" rx="6" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/><line x1="16" y1="22" x2="48" y2="22" stroke="#1a252f" stroke-width="2"/><line x1="16" y1="34" x2="48" y2="34" stroke="#1a252f" stroke-width="2"/><line x1="16" y1="46" x2="48" y2="46" stroke="#1a252f" stroke-width="2"/><ellipse cx="32" cy="28" rx="6" ry="3" stroke="#e74c3c" stroke-width="2"/></svg>`,
+            pain: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M10 42 L42 10 C46 6 56 16 52 20 L20 52 C16 56 6 46 10 42 Z" fill="#e67e22" stroke="#d35400" stroke-width="2"/><line x1="22" y1="34" x2="28" y2="40" stroke="#d35400" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="24" x2="38" y2="30" stroke="#d35400" stroke-width="2.5" stroke-linecap="round"/><line x1="42" y1="14" x2="48" y2="20" stroke="#d35400" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+            steak: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M12 24 C12 16 36 12 48 18 C60 24 54 44 44 48 C34 52 14 50 12 36 Z" fill="#6d3d20" stroke="#482712" stroke-width="2"/><path d="M22 28 C26 28 32 34 26 40 C22 36 18 30 22 28 Z" fill="#fff"/><line x1="18" y1="20" x2="32" y2="34" stroke="#111" stroke-width="2" stroke-linecap="round" opacity="0.4"/><line x1="28" y1="18" x2="42" y2="32" stroke="#111" stroke-width="2" stroke-linecap="round" opacity="0.4"/><line x1="38" y1="20" x2="48" y2="30" stroke="#111" stroke-width="2" stroke-linecap="round" opacity="0.4"/></svg>`,
+            poisson_cuit: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M10 32 C10 16 54 16 54 32 C54 48 10 48 10 32 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/><path d="M20 32 C20 22 44 22 44 32 C44 42 20 42 20 32 Z" fill="#ff7675"/><path d="M32 18 L32 46" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.6"/></svg>`,
+            cocain: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><rect x="12" y="18" width="40" height="28" rx="2" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/><line x1="12" y1="32" x2="52" y2="32" stroke="#95a5a6" stroke-dasharray="3,3" stroke-width="1.5"/><text x="32" y="36" fill="#7f8c8d" font-size="8" font-family="sans-serif" font-weight="bold" text-anchor="middle">PURE</text></svg>`,
+            plomb: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M14 42 L22 18 L46 16 L52 34 L38 50 L18 48 Z" fill="#7f8c8d" stroke="#5c6a72" stroke-width="2"/><path d="M22 18 L28 34 L38 50" stroke="#5c6a72" stroke-width="1.5"/><path d="M46 16 L28 34" stroke="#5c6a72" stroke-width="1.5"/><circle cx="28" cy="26" r="3" fill="#34495e" opacity="0.3"/><circle cx="40" cy="38" r="4" fill="#34495e" opacity="0.3"/></svg>`,
+            munitions_legeres: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M30 46 L34 46 L34 24 L32 14 L30 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="28" y="46" width="8" height="6" fill="#d68910"/></svg>`,
+            munitions_moyennes: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M22 46 L26 46 L26 24 L24 14 L22 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="20" y="46" width="8" height="6" fill="#d68910"/><path d="M38 46 L42 46 L42 24 L40 14 L38 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="36" y="46" width="8" height="6" fill="#d68910"/></svg>`,
+            munitions_lourdes: `<svg viewBox="0 0 64 64" width="24" height="24" style="vertical-align: middle; fill: none; display: inline-block; margin-right: 4px;"><path d="M16 46 L20 46 L20 24 L18 14 L16 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="14" y="46" width="8" height="6" fill="#d68910"/><path d="M30 46 L34 46 L34 24 L32 14 L30 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="28" y="46" width="8" height="6" fill="#d68910"/><path d="M44 46 L48 46 L48 24 L46 14 L44 24 Z" fill="#f1c40f" stroke="#d68910" stroke-width="1.5"/><rect x="42" y="46" width="8" height="6" fill="#d68910"/></svg>`
+        };
+
+        function getResourceIcon(key, size = 24) {
+            const rawSvg = RESOURCE_ICONS[key];
+            if (rawSvg) {
+                return rawSvg.replace(/width="\d+"/, `width="${size}"`).replace(/height="\d+"/, `height="${size}"`);
+            }
+            // Fallbacks
+            let emoji = "📦";
+            if (key === 'calcaire') emoji = "🪨";
+            if (key === 'fer') emoji = "⛓️";
+            if (key === 'petrole') emoji = "🛢️";
+            if (key === 'cereales') emoji = "🌾";
+            if (key === 'betail') emoji = "🐂";
+            if (key === 'poisson') emoji = "🐟";
+            if (key === 'coca') emoji = "🌿";
+            if (key === 'beton') emoji = "🧱";
+            if (key === 'acier') emoji = "🏗️";
+            if (key === 'baril') emoji = "🧴";
+            if (key === 'pain') emoji = "🍞";
+            if (key === 'steak') emoji = "🥩";
+            if (key === 'poisson_cuit') emoji = "🍳";
+            if (key === 'cocain') emoji = "🧪";
+            if (key === 'plomb') emoji = "🪙";
+            if (key && key.startsWith('munitions')) emoji = "⚡";
+            return emoji;
+        }
+
+        // Global workplace details
+        let playerWorkplace = null;
+
         // ─── Données & Configurations Initiales ─────────────────────
         const DEFAULT_RESOURCES = {
             // Raw Materials (Ressources de base)
@@ -1898,6 +1940,20 @@
             return '_' + Math.random().toString(36).substr(2, 9);
         }
 
+        // Helper flag
+        function getFlagEmoji(countryCode) {
+            if (!countryCode) return '🏳️';
+            const codePoints = countryCode
+                .toUpperCase()
+                .split('')
+                .map(char => 127397 + char.charCodeAt(0));
+            try {
+                return String.fromCodePoint(...codePoints);
+            } catch (e) {
+                return '🏳️';
+            }
+        }
+
         // ─── Navigation entre Onglets ───────────────────────────────
         function navigate(viewId) {
             // Masquer toutes les sections
@@ -1988,24 +2044,12 @@
                 LOCAL_TO_API_MAPPING[API_ITEM_MAPPING[k]] = k;
             });
 
-            // Helper flag
-            function getFlagEmoji(countryCode) {
-                if (!countryCode) return '🏳️';
-                const codePoints = countryCode
-                    .toUpperCase()
-                    .split('')
-                    .map(char => 127397 + char.charCodeAt(0));
-                try {
-                    return String.fromCodePoint(...codePoints);
-                } catch (e) {
-                    return '🏳️';
-                }
-            }
+            // Helper flag (now using global getFlagEmoji)
 
             // Helper country info
             const countryMap = {};
             countries.forEach(c => {
-                if (c.code) countryMap[c.code.toLowerCase()] = c;
+                countryMap[c._id] = c;
             });
 
             const getCountryStrategicBonus = (c) => {
@@ -2069,7 +2113,7 @@
                 if (isRaw) {
                     const activeDeps = regions.filter(r => r.deposit && r.deposit.type === apiCode);
                     activeDeps.forEach(r => {
-                        const c = countryMap[r.countryCode.toLowerCase()];
+                        const c = countryMap[r.country];
                         const stratBonus = c ? getCountryStrategicBonus(c) : 0;
                         const isSpecialized = c && c.specializedItem === apiCode;
                         const ethicBonus = isSpecialized ? 30 : 0;
@@ -2087,10 +2131,16 @@
                             timeString = `${hours}h ${mins}m`;
                         }
 
+                        const isOccupied = r.initialCountry && r.initialCountry !== r.country;
+                        const initialCountry = isOccupied ? countries.find(cnt => cnt._id === r.initialCountry) : null;
+                        const displayName = isOccupied && initialCountry 
+                            ? `${r.name} (Occupé par ${c ? c.name : '?'})`
+                            : `${r.name} (${c ? c.name : r.countryCode.toUpperCase()})`;
+
                         mergedList.push({
                             type: 'deposit',
-                            name: `${r.name} (${c ? c.name : r.countryCode.toUpperCase()})`,
-                            code: r.countryCode,
+                            name: displayName,
+                            code: c ? c.code : r.countryCode,
                             stratBonus,
                             ethicBonus,
                             depositBonus,
@@ -2253,7 +2303,7 @@
 
             const countryMap = {};
             countries.forEach(c => {
-                if (c.code) countryMap[c.code.toLowerCase()] = c;
+                countryMap[c._id] = c;
             });
 
             // Parcourir chaque ressource pour calculer son bonus max global disponible
@@ -2266,7 +2316,7 @@
                 if (isRaw) {
                     // Parcourir les régions pour trouver le bonus max (incluant gisement actif +30%)
                     regions.forEach(r => {
-                        const c = countryMap[r.countryCode.toLowerCase()];
+                        const c = countryMap[r.country];
                         const stratBonus = c ? getCountryStrategicBonus(c) : 0;
                         const isSpecialized = c && c.specializedItem === apiCode;
                         const ethicBonus = isSpecialized ? 30 : 0;
@@ -2319,6 +2369,11 @@
             localStorage.setItem('usines_sim_resources', JSON.stringify(resources));
             localStorage.setItem('usines_sim_config', JSON.stringify(globalConfig));
             localStorage.setItem('usines_sim_skills', JSON.stringify(playerSkills));
+            if (playerWorkplace) {
+                localStorage.setItem('usines_sim_player_workplace', JSON.stringify(playerWorkplace));
+            } else {
+                localStorage.removeItem('usines_sim_player_workplace');
+            }
         }
 
         function loadState() {
@@ -2329,7 +2384,13 @@
             const savedUserId = localStorage.getItem('usines_sim_api_user_id');
             const savedSkills = localStorage.getItem('usines_sim_skills');
 
-            if (savedFact) factories = JSON.parse(savedFact);
+            if (savedFact) {
+                factories = JSON.parse(savedFact);
+                factories.forEach(f => {
+                    if (!f.workers) f.workers = [];
+                    if (!f.simulatedWorkers) f.simulatedWorkers = [];
+                });
+            }
             if (savedRes) {
                 const loaded = JSON.parse(savedRes);
                 // Backfill any missing resources or properties from defaults (e.g. coca, cocain, maxBonus)
@@ -2367,19 +2428,9 @@
             
             if (savedApiKey) {
                 setTimeout(() => {
-                    const input = document.getElementById('api-key-input');
-                    if (input) {
-                        input.value = savedApiKey;
-                        document.getElementById('sync-status').innerText = "Clé API enregistrée";
-                    }
-                }, 100);
-            } else {
-                // Charger la clé API par défaut si aucune clé n'est encore enregistrée en localStorage
-                setTimeout(() => {
-                    const input = document.getElementById('api-key-input');
-                    if (input && input.value) {
-                        localStorage.setItem('usines_sim_api_key', input.value);
-                        document.getElementById('sync-status').innerText = "Clé API par défaut chargée";
+                    const statusDiv = document.getElementById('sync-status');
+                    if (statusDiv) {
+                        statusDiv.innerText = "Clé API chargée";
                     }
                 }, 100);
             }
@@ -2396,14 +2447,13 @@
                     const input = document.getElementById('api-user-id');
                     if (input) input.value = finalUserId;
                 }, 100);
+            }
+
+            const savedWorkplace = localStorage.getItem('usines_sim_player_workplace');
+            if (savedWorkplace) {
+                playerWorkplace = JSON.parse(savedWorkplace);
             } else {
-                // Charger l'ID utilisateur par défaut si aucun n'est encore enregistré en localStorage
-                setTimeout(() => {
-                    const input = document.getElementById('api-user-id');
-                    if (input && input.value) {
-                        localStorage.setItem('usines_sim_api_user_id', input.value);
-                    }
-                }, 100);
+                playerWorkplace = null;
             }
         
             updateMaxBonusesFromApi();
@@ -2417,8 +2467,10 @@
                 localStorage.removeItem('usines_sim_api_key');
                 localStorage.removeItem('usines_sim_api_user_id');
                 localStorage.removeItem('usines_sim_skills');
+                localStorage.removeItem('usines_sim_player_workplace');
                 
                 factories = [];
+                playerWorkplace = null;
                 resources = JSON.parse(JSON.stringify(DEFAULT_RESOURCES));
                 globalConfig = {
                     ptsPerHour: 5.5,
@@ -2532,20 +2584,33 @@
 
         // ─── Synchronisation Live API (TRPC Gateway) ────────────────
         async function syncWithAPI() {
-            const apiKey = document.getElementById('api-key-input').value.trim();
-            if (!apiKey) {
-                alert("Veuillez saisir votre clé API (wae_...)");
-                return;
-            }
-
             const btn = document.querySelector('button[onclick="syncWithAPI()"]');
             const statusDiv = document.getElementById('sync-status');
             
             btn.disabled = true;
             btn.innerText = "Synchro...";
-            statusDiv.innerText = "Connexion...";
+            statusDiv.innerText = "Chargement clé...";
 
             try {
+                // Charger la clé API depuis config.json ou fallback localStorage
+                let apiKey = "";
+                try {
+                    const configRes = await fetch('config.json');
+                    if (configRes.ok) {
+                        const configData = await configRes.json();
+                        apiKey = configData.apiKey ? configData.apiKey.trim() : "";
+                    }
+                } catch (e) {
+                    // Ignorer
+                }
+
+                if (!apiKey) {
+                    apiKey = localStorage.getItem('usines_sim_api_key') || "";
+                }
+
+                if (!apiKey) {
+                    throw new Error("Clé API introuvable. Veuillez configurer le fichier 'config.json' à la racine de l'application.");
+                }
                 const headers = {
                     "X-API-Key": apiKey,
                     "Accept": "application/json"
@@ -2715,14 +2780,124 @@
 
                 const apiCompanies = await Promise.all(companyPromises);
 
+                // Récupération des ouvriers actifs
+                statusDiv.innerText = "Liste des ouvriers...";
+                let apiWorkersPerCompany = [];
+                const workerProfiles = {};
+                try {
+                    const workersInput = encodeURIComponent(JSON.stringify({ userId: resolvedUserId }));
+                    const workersRes = await fetch(`https://gateway.warerastats.io/trpc/worker.getWorkers?input=${workersInput}`, { headers });
+                    if (workersRes.ok) {
+                        const workersData = await workersRes.json();
+                        if (workersData.result && workersData.result.data && workersData.result.data.workersPerCompany) {
+                            apiWorkersPerCompany = workersData.result.data.workersPerCompany;
+                            
+                            // Récupérer tous les IDs d'utilisateurs uniques pour les ouvriers
+                            const uniqueWorkerIds = new Set();
+                            apiWorkersPerCompany.forEach(c => {
+                                if (c.workers && Array.isArray(c.workers)) {
+                                    c.workers.forEach(w => {
+                                        if (w.user) uniqueWorkerIds.add(w.user);
+                                    });
+                                }
+                            });
+
+                            if (uniqueWorkerIds.size > 0) {
+                                statusDiv.innerText = `Profils ouvriers (0/${uniqueWorkerIds.size})...`;
+                                let profilesFetched = 0;
+                                const profilePromises = Array.from(uniqueWorkerIds).map(async (workerId) => {
+                                    try {
+                                        const input = encodeURIComponent(JSON.stringify({ userId: workerId }));
+                                        const res = await fetch(`https://gateway.warerastats.io/trpc/user.getUserLite?input=${input}`, { headers });
+                                        if (res.ok) {
+                                            const data = await res.json();
+                                            if (data.result && data.result.data) {
+                                                workerProfiles[workerId] = data.result.data;
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.warn(`Impossible de charger le profil de l'ouvrier ${workerId}:`, e);
+                                    } finally {
+                                        profilesFetched++;
+                                        statusDiv.innerText = `Profils ouvriers (${profilesFetched}/${uniqueWorkerIds.size})...`;
+                                    }
+                                });
+                                await Promise.all(profilePromises);
+                            }
+                        }
+                    }
+                } catch (workerErr) {
+                    console.warn("Échec de la récupération des ouvriers :", workerErr);
+                }
+
+                // Récupération de l'emploi du joueur via les transactions de salaire
+                statusDiv.innerText = "Recherche d'un employeur...";
+                try {
+                    const transInput = encodeURIComponent(JSON.stringify({ userId: resolvedUserId, limit: 10, transactionType: "wage" }));
+                    const transRes = await fetch(`https://gateway.warerastats.io/trpc/transaction.getPaginatedTransactions?input=${transInput}`, { headers });
+                    if (transRes.ok) {
+                        const transData = await transRes.json();
+                        const transItems = transData.result?.data?.items || [];
+                        const playerWageTrans = transItems.find(t => t.sellerId === resolvedUserId && t.transactionType === "wage");
+                        if (playerWageTrans) {
+                            const buyerId = playerWageTrans.buyerId;
+                            const buyerInput = encodeURIComponent(JSON.stringify({ userId: buyerId }));
+                            const buyerRes = await fetch(`https://gateway.warerastats.io/trpc/user.getUserLite?input=${buyerInput}`, { headers });
+                            if (buyerRes.ok) {
+                                const buyerData = await buyerRes.json();
+                                const employerProfile = buyerData.result?.data;
+                                if (employerProfile && employerProfile.username) {
+                                    playerWorkplace = {
+                                        employerId: buyerId,
+                                        employerName: employerProfile.username,
+                                        wage: playerWageTrans.money / playerWageTrans.quantity,
+                                        lastWageTotal: playerWageTrans.money,
+                                        lastPpQty: playerWageTrans.quantity,
+                                        date: playerWageTrans.createdAt
+                                    };
+                                } else {
+                                    playerWorkplace = null;
+                                }
+                            } else {
+                                playerWorkplace = null;
+                            }
+                        } else {
+                            playerWorkplace = null;
+                        }
+                    } else {
+                        playerWorkplace = null;
+                    }
+                } catch (transErr) {
+                    console.warn("Échec de la récupération de l'emploi :", transErr);
+                    playerWorkplace = null;
+                }
+
                 // 4. Mapper les données d'usine de l'API vers notre modèle interne
                 const newFactories = apiCompanies.map(c => {
-                    // Chercher si l'usine existait déjà localement pour conserver le bonus de zone
+                    // Chercher si l'usine existait déjà localement pour conserver le bonus de zone et le supplyMode
                     const existing = factories.find(f => f.id === c._id);
                     
                     const level = c.activeUpgradeLevels ? (c.activeUpgradeLevels.automatedEngine || 1) : 1;
                     const isDisabled = c.disabledAt !== undefined && c.disabledAt !== null;
                     const localProdType = isDisabled ? 'inactif' : (API_ITEM_MAPPING[c.itemCode] || 'inactif');
+
+                    // Récupérer les ouvriers associés à cette usine
+                    const companyWorkersData = apiWorkersPerCompany.find(wc => wc.company && wc.company._id === c._id);
+                    const workersList = [];
+                    if (companyWorkersData && companyWorkersData.workers) {
+                        companyWorkersData.workers.forEach(w => {
+                            const profile = workerProfiles[w.user] || null;
+                            workersList.push({
+                                user: w.user,
+                                wage: w.wage,
+                                fidelity: w.fidelity,
+                                joinedAt: w.joinedAt,
+                                username: profile ? profile.username : "Inconnu",
+                                countryId: profile ? profile.country : null,
+                                skills: profile ? profile.skills : null
+                            });
+                        });
+                    }
 
                     return {
                         id: c._id,
@@ -2730,7 +2905,9 @@
                         level: level,
                         productionType: localProdType,
                         supplyMode: existing ? existing.supplyMode : 'buy',
-                        zoneBonus: existing ? existing.zoneBonus : 0
+                        zoneBonus: existing ? existing.zoneBonus : 0,
+                        regionId: c.region,
+                        workers: workersList
                     };
                 });
 
@@ -2785,26 +2962,12 @@
                 const card = document.createElement('div');
                 card.className = `market-input-card ${key === 'acier' ? 'highlight' : ''}`;
                 
-                let emoji = "📦";
-                if (key === 'calcaire') emoji = "🪨";
-                if (key === 'fer') emoji = "⛓️";
-                if (key === 'petrole') emoji = "🛢️";
-                if (key === 'cereales') emoji = "🌾";
-                if (key === 'betail') emoji = "🐂";
-                if (key === 'poisson') emoji = "🐟";
-                if (key === 'coca') emoji = "🌿";
-                if (key === 'beton') emoji = "🧱";
-                if (key === 'acier') emoji = "🏗️";
-                if (key === 'baril') emoji = "🧴";
-                if (key === 'pain') emoji = "🍞";
-                if (key === 'steak') emoji = "🥩";
-                if (key === 'poisson_cuit') emoji = "🍳";
-                if (key === 'cocain') emoji = "🧪";
-                if (key === 'plomb') emoji = "🪙";
-                if (key.startsWith('munitions')) emoji = "⚡";
+                const iconHtml = getResourceIcon(key, 24);
 
                 card.innerHTML = `
-                    <label for="price-${key}" style="font-weight: 600; width: 100%;">${emoji} ${res.name}</label>
+                    <label for="price-${key}" style="font-weight: 600; width: 100%; display: flex; align-items: center; gap: 6px;">
+                        ${iconHtml} <span>${res.name}</span>
+                    </label>
                     <div class="price-controls" style="width: 100%;">
                         <button onclick="adjustPrice('${key}', -0.01, event)">-</button>
                         <input type="number" id="price-${key}" min="0" step="0.0001" value="${res.price.toFixed(4)}" onchange="changeResourcePrice('${key}', this.value)">
@@ -2898,6 +3061,92 @@
                 // Calculs en direct pour cette usine spécifique
                 const calc = calculateSingleFactory(factory);
 
+                // Résoudre la région et le bonus automatiquement
+                let regionInfoHtml = '';
+                let zoneBonusInputHtml = '';
+                const computedBonus = getFactoryComputedZoneBonus(factory);
+
+                if (factory.regionId) {
+                    const savedCountries = localStorage.getItem('usines_sim_countries');
+                    const savedRegions = localStorage.getItem('usines_sim_regions');
+                    let regionName = 'Région inconnue';
+                    let countryFlag = '🏳️';
+                    let breakdownTooltip = '';
+
+                    if (savedCountries && savedRegions) {
+                        try {
+                            const countries = JSON.parse(savedCountries);
+                            const regionsMap = JSON.parse(savedRegions);
+                            const region = regionsMap[factory.regionId];
+                            if (region) {
+                                regionName = region.name || 'Sans nom';
+                                const country = countries.find(c => c._id === region.country);
+                                if (country) {
+                                    const initialCountry = countries.find(c => c._id === region.initialCountry);
+                                    if (initialCountry && initialCountry._id !== country._id) {
+                                        regionName = `${region.name} (Occupé par ${country.name})`;
+                                    }
+                                    countryFlag = getFlagEmoji(country.code);
+                                    
+                                    let strat = 0;
+                                    if (country.rankings && country.rankings.countryProductionBonus && country.rankings.countryProductionBonus.value !== undefined) {
+                                        strat = parseFloat(country.rankings.countryProductionBonus.value) || 0;
+                                    } else if (country.strategicResources && country.strategicResources.bonuses && country.strategicResources.bonuses.productionPercent !== undefined) {
+                                        strat = parseFloat(country.strategicResources.bonuses.productionPercent) || 0;
+                                    }
+
+                                    const API_ITEM_MAPPING = {
+                                        "calcaire": "limestone", "fer": "iron", "petrole": "petroleum",
+                                        "cereales": "grain", "betail": "livestock", "poisson": "fish",
+                                        "beton": "concrete", "acier": "steel", "baril": "oil",
+                                        "pain": "bread", "steak": "steak", "poisson_cuit": "cookedFish",
+                                        "plomb": "lead", "munitions_legeres": "lightAmmo",
+                                        "munitions_moyennes": "ammo", "munitions_lourdes": "heavyAmmo",
+                                        "coca": "coca", "cocain": "cocain"
+                                    };
+                                    const apiCode = API_ITEM_MAPPING[factory.productionType];
+                                    const ethic = (country.specializedItem === apiCode) ? 30 : 0;
+
+                                    let deposit = 0;
+                                    if (region.deposit && region.deposit.type === apiCode) {
+                                        const endsAt = new Date(region.deposit.endsAt);
+                                        if (endsAt > new Date()) {
+                                            deposit = parseFloat(region.deposit.bonusPercent) || 30;
+                                        }
+                                    }
+
+                                    breakdownTooltip = `Détail : Base Pays +${strat}% | Spé Pays +${ethic}% | Gisement +${deposit}%`;
+                                }
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+
+                    regionInfoHtml = `
+                        <div style="font-size: 0.8rem; color: var(--accent); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                            <span>📍 ${regionName} ${countryFlag}</span>
+                        </div>
+                    `;
+
+                    zoneBonusInputHtml = `
+                        <div class="form-group">
+                            <label style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Bonus de Zone (%)</span>
+                                <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: none;" title="${breakdownTooltip}">⚙️ Auto</span>
+                            </label>
+                            <input type="text" readonly disabled value="${computedBonus.toFixed(2)}%" style="background: rgba(255,255,255,0.03); color: var(--accent); border-color: rgba(255,255,255,0.05); font-weight: bold; cursor: not-allowed;" title="${breakdownTooltip}">
+                        </div>
+                    `;
+                } else {
+                    zoneBonusInputHtml = `
+                        <div class="form-group">
+                            <label>Bonus de Zone (%)</label>
+                            <input type="number" min="0" step="0.5" placeholder="Ex: 10" value="${factory.zoneBonus}" onchange="changeZoneBonus('${factory.id}', this.value)">
+                        </div>
+                    `;
+                }
+
                 // Boutons de niveau
                 let levelButtons = '';
                 for (let lvl = 1; lvl <= 7; lvl++) {
@@ -2947,6 +3196,154 @@
                     `;
                 }
 
+                // Calculer le Salaire Max Rentable et les marges salariés
+                const maxRentableSalary = getMaxRentableSalary(factory);
+                const totalWorkersMargin = calc.workersMargin;
+
+                // Récupérer et générer la liste des ouvriers
+                let workersHtml = '';
+                const totalWorkersCount = (factory.workers ? factory.workers.length : 0) + (factory.simulatedWorkers ? factory.simulatedWorkers.length : 0);
+                
+                if (factory.productionType !== 'inactif' && totalWorkersCount > 0) {
+                    workersHtml = `
+                        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 12px;">
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <span>👥 Ouvriers Actifs (${totalWorkersCount})</span>
+                                <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem; border-color: var(--warning); color: var(--warning);" onclick="addSimulatedWorker('${factory.id}')">➕ Simuler</button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                    `;
+
+                    // Ouvriers réels
+                    if (factory.workers) {
+                        factory.workers.forEach(w => {
+                            let flag = '🏳️';
+                            let countryName = 'Inconnu';
+                            if (w.countryId) {
+                                const savedCountries = localStorage.getItem('usines_sim_countries');
+                                if (savedCountries) {
+                                    try {
+                                        const countries = JSON.parse(savedCountries);
+                                        const c = countries.find(c => c._id === w.countryId);
+                                        if (c) {
+                                            flag = getFlagEmoji(c.code);
+                                            countryName = c.name;
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                    }
+                                }
+                            }
+
+                            const fidelity = w.fidelity || 1;
+                            const seniorityBonus = `+${fidelity}%`;
+
+                            const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
+                            const wEnergy = (w.skills && w.skills.energy && w.skills.energy.total) || playerSkills.workerEnergy || 80;
+                            const wProdWithFidelity = wProd * (1 + fidelity / 100);
+                            const dailySessions = (wEnergy * 2.4) / 10;
+                            const dailyPpOutput = dailySessions * wProdWithFidelity;
+                            
+                            const marginPerPp = maxRentableSalary - w.wage;
+                            const dailyWorkerMargin = marginPerPp * dailyPpOutput;
+
+                            const marginColor = dailyWorkerMargin >= 0 ? 'var(--accent)' : 'var(--danger)';
+                            const marginPrefix = dailyWorkerMargin >= 0 ? '+' : '';
+
+                            workersHtml += `
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; padding: 10px; line-height: 1.4;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem;">${w.username}</span>
+                                        <span title="${countryName}" style="font-size: 1.1rem; cursor: help;">${flag}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted);">
+                                        <span>Salaire : <strong style="color: #fff; font-family: var(--font-mono);">${w.wage.toFixed(3)} €/PP</strong></span>
+                                        <span>Ancienneté : <strong style="color: #fff;">${seniorityBonus}</strong></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
+                                        <span>Marge théorique :</span>
+                                        <strong style="color: ${marginColor}; font-family: var(--font-mono);">${marginPrefix}${dailyWorkerMargin.toFixed(2)} €/jour</strong>
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 3px; font-style: italic;">
+                                        (${dailyPpOutput.toFixed(0)} PP/jour | Marge/PP: ${marginPerPp > 0 ? '+' : ''}${marginPerPp.toFixed(3)} €)
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Ouvriers simulés
+                    if (factory.simulatedWorkers) {
+                        factory.simulatedWorkers.forEach(w => {
+                            const fidelity = w.fidelity || 10;
+                            const seniorityBonus = `+${fidelity}%`;
+
+                            const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
+                            const wEnergy = (w.skills && w.skills.energy && w.skills.energy.total) || playerSkills.workerEnergy || 80;
+                            const wProdWithFidelity = wProd * (1 + fidelity / 100);
+                            const dailySessions = (wEnergy * 2.4) / 10;
+                            const dailyPpOutput = dailySessions * wProdWithFidelity;
+                            
+                            const marginPerPp = maxRentableSalary - w.wage;
+                            const dailyWorkerMargin = marginPerPp * dailyPpOutput;
+
+                            const marginColor = dailyWorkerMargin >= 0 ? 'var(--accent)' : 'var(--danger)';
+                            const marginPrefix = dailyWorkerMargin >= 0 ? '+' : '';
+
+                            workersHtml += `
+                                <div style="background: rgba(147, 51, 234, 0.04); border: 1px dashed rgba(147, 51, 234, 0.3); border-radius: 6px; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-weight: 700; color: var(--warning); font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">🤖 ${w.username}</span>
+                                        <button class="btn btn-secondary btn-sm" style="padding: 2px 6px; border-color: rgba(244,63,94,0.3); color: var(--danger); font-size: 0.75rem;" onclick="deleteSimulatedWorker('${factory.id}', '${w.id}')">🗑️</button>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px; text-transform: none;">Salaire (€/PP)</label>
+                                            <input type="number" step="0.001" min="0" value="${w.wage}" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); color: #fff; font-family: var(--font-mono);" onchange="updateSimulatedWorker('${factory.id}', '${w.id}', 'wage', this.value)">
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px; text-transform: none;">Ancienneté (%)</label>
+                                            <input type="number" step="1" min="0" max="100" value="${w.fidelity}" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); color: #fff; font-family: var(--font-mono);" onchange="updateSimulatedWorker('${factory.id}', '${w.id}', 'fidelity', this.value)">
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px; text-transform: none;">Prod (PP)</label>
+                                            <input type="number" step="1" min="1" value="${wProd}" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); color: #fff; font-family: var(--font-mono);" onchange="updateSimulatedWorker('${factory.id}', '${w.id}', 'prod', this.value)">
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px; text-transform: none;">Énergie</label>
+                                            <input type="number" step="10" min="0" value="${wEnergy}" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); color: #fff; font-family: var(--font-mono);" onchange="updateSimulatedWorker('${factory.id}', '${w.id}', 'energy', this.value)">
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 4px;">
+                                        <span>Marge théorique :</span>
+                                        <strong style="color: ${marginColor}; font-family: var(--font-mono);">${marginPrefix}${dailyWorkerMargin.toFixed(2)} €/j</strong>
+                                    </div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted); text-align: right; font-style: italic;">
+                                        (${dailyPpOutput.toFixed(0)} PP/j | Marge/PP: ${marginPerPp > 0 ? '+' : ''}${marginPerPp.toFixed(3)} €)
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    workersHtml += `
+                            </div>
+                        </div>
+                    `;
+                } else if (factory.productionType !== 'inactif') {
+                    workersHtml = `
+                        <div style="border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.78rem; color: var(--text-muted);">Aucun ouvrier actif</span>
+                            <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem; border-color: var(--warning); color: var(--warning);" onclick="addSimulatedWorker('${factory.id}')">➕ Simuler un ouvrier</button>
+                        </div>
+                    `;
+                }
+
                 // Désactiver le bouton d'achat si production de base
                 const isTransformed = factory.productionType !== 'inactif' && resources[factory.productionType].recipe !== null;
                 const supplySelectHtml = isTransformed ? `
@@ -2971,6 +3368,7 @@
                         <div class="factory-title-wrap">
                             <input type="text" value="${factory.name}" onchange="changeFactoryName('${factory.id}', this.value)" title="Cliquer pour renommer">
                             <span class="factory-level-badge">Niveau ${factory.level}</span>
+                            ${regionInfoHtml}
                         </div>
                         <button class="btn btn-secondary btn-sm" style="padding: 4px 8px; border-color: rgba(244,63,94,0.3); color: var(--danger);" onclick="deleteFactory('${factory.id}')" title="Supprimer l'usine">🗑️</button>
                     </div>
@@ -2987,19 +3385,19 @@
                         <!-- Type de Production -->
                         <div class="form-group">
                             <label>Type de Production</label>
-                            <select onchange="changeProductionType('${factory.id}', this.value)">
-                                ${prodOptions}
-                            </select>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${factory.productionType !== 'inactif' ? getResourceIcon(factory.productionType, 24) : '⚠️'}
+                                <select onchange="changeProductionType('${factory.id}', this.value)" style="flex: 1;">
+                                    ${prodOptions}
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Chaîne logistique (achat vs interne) -->
                         ${supplySelectHtml}
 
                         <!-- Zone Bonus -->
-                        <div class="form-group">
-                            <label>Bonus de Zone (%)</label>
-                            <input type="number" min="0" step="0.5" placeholder="Ex: 10" value="${factory.zoneBonus}" onchange="changeZoneBonus('${factory.id}', this.value)">
-                        </div>
+                        ${zoneBonusInputHtml}
 
                         <!-- Bilan de production de l'usine -->
                         <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; margin-top: 6px; display: flex; flex-direction: column; gap: 8px;">
@@ -3019,14 +3417,38 @@
                                 <span>Recettes brutes :</span>
                                 <strong style="font-family: var(--font-mono);">${calc.grossRevenue.toFixed(2)} €/j</strong>
                             </div>
+                            ${totalWorkersCount > 0 ? `
+                            <div class="factory-stat-row" style="font-size: 0.90rem; font-weight: 600; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
+                                <span>Bénéfice Industriel (Base) :</span>
+                                <strong style="font-family: var(--font-mono);">${calc.netProfit > 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/j</strong>
+                            </div>
+                            <div class="factory-stat-row" style="font-size: 0.90rem; font-weight: 600;">
+                                <span>Marge Salariés :</span>
+                                <strong style="color: ${totalWorkersMargin >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${totalWorkersMargin >= 0 ? '+' : ''}${totalWorkersMargin.toFixed(2)} €/j</strong>
+                            </div>
+                            <div class="factory-stat-row" style="font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
+                                <span>Bénéfice Réel Estimé :</span>
+                                <strong class="profit">${(calc.netProfit + totalWorkersMargin) >= 0 ? '+' : ''}${(calc.netProfit + totalWorkersMargin).toFixed(2)} €/jour</strong>
+                            </div>
+                            ` : `
                             <div class="factory-stat-row" style="font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                 <span>Bénéfice Net :</span>
                                 <strong class="profit">${calc.netProfit > 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/jour</strong>
                             </div>
+                            `}
+                            ${factory.productionType !== 'inactif' ? `
+                            <div class="factory-stat-row" style="font-size: 0.85rem; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px; margin-top: 4px;">
+                                <span>Salaire Max Rentable :</span>
+                                <strong style="color: var(--accent); font-family: var(--font-mono);">${maxRentableSalary.toFixed(3)} €/PP</strong>
+                            </div>
+                            ` : ''}
                         </div>
 
                         <!-- ROI Upgrade info -->
                         ${upgradeHtml}
+
+                        <!-- Liste des ouvriers actifs -->
+                        ${workersHtml}
                     </div>
                 `;
 
@@ -3047,7 +3469,9 @@
                 level: 1,
                 productionType: bestStrategy.key,
                 supplyMode: bestStrategy.mode || 'buy',
-                zoneBonus: defaultBonus
+                zoneBonus: defaultBonus,
+                workers: [],
+                simulatedWorkers: []
             });
             saveState();
             renderFactories();
@@ -3062,6 +3486,64 @@
                 renderFactories();
                 updateCalculations();
                 showToast("Usine supprimée.");
+            }
+        }
+
+        function addSimulatedWorker(factoryId) {
+            const index = factories.findIndex(f => f.id === factoryId);
+            if (index !== -1) {
+                const f = factories[index];
+                if (!f.simulatedWorkers) f.simulatedWorkers = [];
+                
+                f.simulatedWorkers.push({
+                    id: generateId(),
+                    username: `Ouvrier Simulé #${f.simulatedWorkers.length + 1}`,
+                    wage: playerSkills.workerSalary || 0.085,
+                    fidelity: 10,
+                    skills: {
+                        production: { total: playerSkills.workerProd || 31 },
+                        energy: { total: playerSkills.workerEnergy || 80 }
+                    }
+                });
+                saveState();
+                renderFactories();
+                updateCalculations();
+                showToast("Ouvrier simulé ajouté !");
+            }
+        }
+
+        function deleteSimulatedWorker(factoryId, simId) {
+            const index = factories.findIndex(f => f.id === factoryId);
+            if (index !== -1) {
+                const f = factories[index];
+                if (f.simulatedWorkers) {
+                    f.simulatedWorkers = f.simulatedWorkers.filter(w => w.id !== simId);
+                    saveState();
+                    renderFactories();
+                    updateCalculations();
+                    showToast("Ouvrier simulé supprimé.");
+                }
+            }
+        }
+
+        function updateSimulatedWorker(factoryId, workerId, field, value) {
+            const index = factories.findIndex(f => f.id === factoryId);
+            if (index !== -1) {
+                const f = factories[index];
+                if (f.simulatedWorkers) {
+                    const w = f.simulatedWorkers.find(x => x.id === workerId);
+                    if (w) {
+                        const val = parseFloat(value);
+                        if (field === 'wage') w.wage = isNaN(val) ? 0 : val;
+                        if (field === 'fidelity') w.fidelity = isNaN(val) ? 0 : Math.max(0, val);
+                        if (field === 'prod') w.skills.production.total = isNaN(val) ? 31 : Math.max(1, val);
+                        if (field === 'energy') w.skills.energy.total = isNaN(val) ? 80 : Math.max(0, val);
+                        
+                        saveState();
+                        renderFactories();
+                        updateCalculations();
+                    }
+                }
             }
         }
 
@@ -3128,6 +3610,79 @@
             }
         }
 
+        // Calcule dynamiquement le bonus de zone d'une usine basée sur sa région
+        function getFactoryComputedZoneBonus(factory) {
+            if (!factory.regionId) {
+                return parseFloat(factory.zoneBonus) || 0;
+            }
+
+            const savedCountries = localStorage.getItem('usines_sim_countries');
+            const savedRegions = localStorage.getItem('usines_sim_regions');
+            if (!savedCountries || !savedRegions) {
+                return parseFloat(factory.zoneBonus) || 0;
+            }
+
+            try {
+                const countries = JSON.parse(savedCountries);
+                const regionsMap = JSON.parse(savedRegions);
+                const region = regionsMap[factory.regionId];
+                if (!region) {
+                    return parseFloat(factory.zoneBonus) || 0;
+                }
+
+                const country = countries.find(c => c._id === region.country);
+                if (!country) {
+                    return parseFloat(factory.zoneBonus) || 0;
+                }
+
+                let stratBonus = 0;
+                if (country.rankings && country.rankings.countryProductionBonus && country.rankings.countryProductionBonus.value !== undefined) {
+                    stratBonus = parseFloat(country.rankings.countryProductionBonus.value) || 0;
+                } else if (country.strategicResources && country.strategicResources.bonuses && country.strategicResources.bonuses.productionPercent !== undefined) {
+                    stratBonus = parseFloat(country.strategicResources.bonuses.productionPercent) || 0;
+                }
+
+                const API_ITEM_MAPPING = {
+                    "calcaire": "limestone", "fer": "iron", "petrole": "petroleum",
+                    "cereales": "grain", "betail": "livestock", "poisson": "fish",
+                    "beton": "concrete", "acier": "steel", "baril": "oil",
+                    "pain": "bread", "steak": "steak", "poisson_cuit": "cookedFish",
+                    "plomb": "lead", "munitions_legeres": "lightAmmo",
+                    "munitions_moyennes": "ammo", "munitions_lourdes": "heavyAmmo",
+                    "coca": "coca", "cocain": "cocain"
+                };
+
+                const apiCode = API_ITEM_MAPPING[factory.productionType];
+                const ethicBonus = (country.specializedItem === apiCode) ? 30 : 0;
+
+                let depositBonus = 0;
+                if (region.deposit && region.deposit.type === apiCode) {
+                    const endsAt = new Date(region.deposit.endsAt);
+                    if (endsAt > new Date()) {
+                        depositBonus = parseFloat(region.deposit.bonusPercent) || 30;
+                    }
+                }
+
+                return stratBonus + ethicBonus + depositBonus;
+            } catch (e) {
+                console.error("Erreur calcul zone bonus dynamique", e);
+                return parseFloat(factory.zoneBonus) || 0;
+            }
+        }
+
+        function getMaxRentableSalary(factory) {
+            if (factory.productionType === 'inactif') return 0;
+            const res = resources[factory.productionType];
+            if (!res) return 0;
+            if (res.recipe === null) {
+                return res.price / res.ppCost;
+            } else {
+                const inputRes = resources[res.recipe.inputKey];
+                if (!inputRes) return 0;
+                return (res.price - (res.recipe.inputQty * inputRes.price)) / res.ppCost;
+            }
+        }
+
         // ─── Formule de Calcul Unique d'Usine ────────────────────────
         function calculateSingleFactory(factory) {
             if (factory.productionType === 'inactif') {
@@ -3137,52 +3692,136 @@
                     rawCost: 0,
                     grossRevenue: 0,
                     netProfit: 0,
-                    profitPerPp: 0
+                    
+                    ownerPp: 0,
+                    ownerQtyProduced: 0,
+                    ownerRawCost: 0,
+                    ownerGrossRevenue: 0,
+                    ownerNetProfit: 0,
+                    
+                    workersPp: 0,
+                    workersQtyProduced: 0,
+                    workersRawCost: 0,
+                    workersGrossRevenue: 0,
+                    workersMargin: 0,
+                    salariesCost: 0
                 };
             }
 
-            const basePp = LEVEL_PP[factory.level] || 0;
-            const zoneBonusPercent = parseFloat(factory.zoneBonus) || 0;
-            const totalPp = basePp * (1 + zoneBonusPercent / 100);
-            
             const res = resources[factory.productionType];
-            if (!res) return { totalPp: 0, qtyProduced: 0, rawCost: 0, grossRevenue: 0, netProfit: 0, profitPerPp: 0 };
+            if (!res) {
+                return {
+                    totalPp: 0, qtyProduced: 0, rawCost: 0, grossRevenue: 0, netProfit: 0,
+                    ownerPp: 0, ownerQtyProduced: 0, ownerRawCost: 0, ownerGrossRevenue: 0, ownerNetProfit: 0,
+                    workersPp: 0, workersQtyProduced: 0, workersRawCost: 0, workersGrossRevenue: 0, workersMargin: 0, salariesCost: 0
+                };
+            }
 
+            // 1. Capacité PP propriétaire
+            const basePp = LEVEL_PP[factory.level] || 0;
+            const zoneBonusPercent = getFactoryComputedZoneBonus(factory);
+            const ownerPp = basePp * (1 + zoneBonusPercent / 100);
+
+            // 2. Capacité PP ouvriers et coût des salaires
+            let workersPp = 0;
+            let salariesCost = 0;
+
+            if (factory.workers) {
+                factory.workers.forEach(w => {
+                    const fidelity = w.fidelity || 1;
+                    const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
+                    const wEnergy = (w.skills && w.skills.energy && w.skills.energy.total) || playerSkills.workerEnergy || 80;
+                    const wProdWithFidelity = wProd * (1 + fidelity / 100);
+                    const dailySessions = (wEnergy * 2.4) / 10;
+                    const dailyPpOutput = dailySessions * wProdWithFidelity;
+                    
+                    workersPp += dailyPpOutput;
+                    salariesCost += w.wage * dailyPpOutput;
+                });
+            }
+
+            if (factory.simulatedWorkers) {
+                factory.simulatedWorkers.forEach(w => {
+                    const fidelity = w.fidelity || 10;
+                    const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
+                    const wEnergy = (w.skills && w.skills.energy && w.skills.energy.total) || playerSkills.workerEnergy || 80;
+                    const wProdWithFidelity = wProd * (1 + fidelity / 100);
+                    const dailySessions = (wEnergy * 2.4) / 10;
+                    const dailyPpOutput = dailySessions * wProdWithFidelity;
+                    
+                    workersPp += dailyPpOutput;
+                    salariesCost += w.wage * dailyPpOutput;
+                });
+            }
+
+            // 3. Capacité PP cumulée
+            const totalPp = ownerPp + workersPp;
+
+            // 4. Calcul des métriques propriétaire seul (Base)
+            let ownerQtyProduced = 0;
+            let ownerRawCost = 0;
+            let ownerGrossRevenue = 0;
+            let ownerNetProfit = 0;
+
+            if (res.recipe === null) {
+                // Extraction Directe
+                ownerQtyProduced = ownerPp / res.ppCost;
+                ownerGrossRevenue = ownerQtyProduced * res.price;
+                ownerRawCost = 0;
+                ownerNetProfit = ownerGrossRevenue;
+            } else {
+                // Transformation
+                const inputRes = resources[res.recipe.inputKey];
+                if (factory.supplyMode === 'buy') {
+                    ownerQtyProduced = ownerPp / res.ppCost;
+                    ownerGrossRevenue = ownerQtyProduced * res.price;
+                    ownerRawCost = ownerQtyProduced * res.recipe.inputQty * inputRes.price;
+                    ownerNetProfit = ownerGrossRevenue - ownerRawCost;
+                } else {
+                    // Production Interne (Mode Autosuffisant)
+                    const ppPerUnit = res.ppCost + (res.recipe.inputQty * inputRes.ppCost);
+                    ownerQtyProduced = ownerPp / ppPerUnit;
+                    ownerGrossRevenue = ownerQtyProduced * res.price;
+                    ownerRawCost = 0;
+                    ownerNetProfit = ownerGrossRevenue;
+                }
+            }
+
+            // 5. Calcul des métriques globales cumulées (Propriétaire + Ouvriers)
             let qtyProduced = 0;
             let rawCost = 0;
             let grossRevenue = 0;
             let netProfit = 0;
-            let profitPerPp = 0;
 
             if (res.recipe === null) {
                 // Extraction Directe
                 qtyProduced = totalPp / res.ppCost;
                 grossRevenue = qtyProduced * res.price;
                 rawCost = 0;
-                netProfit = grossRevenue;
-                profitPerPp = res.price / res.ppCost;
+                netProfit = grossRevenue - salariesCost;
             } else {
-                // Transformation (Béton, Steak, Munitions, etc.)
+                // Transformation
                 const inputRes = resources[res.recipe.inputKey];
-                
                 if (factory.supplyMode === 'buy') {
-                    // Achat des Matières Premières
                     qtyProduced = totalPp / res.ppCost;
                     grossRevenue = qtyProduced * res.price;
                     rawCost = qtyProduced * res.recipe.inputQty * inputRes.price;
-                    netProfit = grossRevenue - rawCost;
-                    profitPerPp = (res.price - (res.recipe.inputQty * inputRes.price)) / res.ppCost;
+                    netProfit = grossRevenue - rawCost - salariesCost;
                 } else {
                     // Production Interne (Mode Autosuffisant)
-                    // Total PP requis pour 1 produit fini = PP transformation + PP matières
                     const ppPerUnit = res.ppCost + (res.recipe.inputQty * inputRes.ppCost);
                     qtyProduced = totalPp / ppPerUnit;
                     grossRevenue = qtyProduced * res.price;
-                    rawCost = 0; // pas d'achat externe
-                    netProfit = grossRevenue;
-                    profitPerPp = res.price / ppPerUnit;
+                    rawCost = 0;
+                    netProfit = grossRevenue - salariesCost;
                 }
             }
+
+            // Marge nette salariés calculée à partir de la différence des bénéfices
+            const workersMargin = netProfit - ownerNetProfit;
+            const workersQtyProduced = qtyProduced - ownerQtyProduced;
+            const workersRawCost = rawCost - ownerRawCost;
+            const workersGrossRevenue = grossRevenue - ownerGrossRevenue;
 
             return {
                 totalPp,
@@ -3190,7 +3829,19 @@
                 rawCost,
                 grossRevenue,
                 netProfit,
-                profitPerPp
+                
+                ownerPp,
+                ownerQtyProduced,
+                ownerRawCost,
+                ownerGrossRevenue,
+                ownerNetProfit,
+                
+                workersPp,
+                workersQtyProduced,
+                workersRawCost,
+                workersGrossRevenue,
+                workersMargin,
+                salariesCost
             };
         }
 
@@ -3200,6 +3851,8 @@
             let totalNetProfit = 0;
             let basePpSum = 0;
             let totalZoneBonusSum = 0;
+            let totalWorkersMarginGlobal = 0;
+            let totalSalariesCostGlobal = 0;
             
             let bestFactoryName = "N/A";
             let maxFactoryProfit = -Infinity;
@@ -3210,13 +3863,15 @@
             factories.forEach(f => {
                 const calc = calculateSingleFactory(f);
                 
-                totalPp += calc.totalPp;
+                totalPp += calc.ownerPp;
                 totalNetProfit += calc.netProfit;
                 basePpSum += LEVEL_PP[f.level] || 0;
                 totalZoneBonusSum += parseFloat(f.zoneBonus) || 0;
+                totalWorkersMarginGlobal += calc.workersMargin;
+                totalSalariesCostGlobal += calc.salariesCost;
 
-                if (calc.netProfit > maxFactoryProfit && f.productionType !== 'inactif') {
-                    maxFactoryProfit = calc.netProfit;
+                if (calc.ownerNetProfit > maxFactoryProfit && f.productionType !== 'inactif') {
+                    maxFactoryProfit = calc.ownerNetProfit;
                     bestFactoryName = f.name;
                 }
 
@@ -3228,15 +3883,23 @@
                         (resources[f.productionType].recipe === null ? 'Extraction' : 
                         (f.supplyMode === 'buy' ? '🛒 Marché (Achat)' : '🔄 Interne (Autosuffisant)'));
 
+                    const prodNameHtml = f.productionType === 'inactif' ? '⚠️ Inactif' : `
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            ${getResourceIcon(f.productionType, 18)}
+                            <span>${resources[f.productionType].name}</span>
+                        </div>
+                    `;
+
                     row.innerHTML = `
                         <td style="font-weight: 600;">${f.name}</td>
                         <td class="mono">${f.level}</td>
-                        <td>${f.productionType === 'inactif' ? '⚠️ Inactif' : resources[f.productionType].name}</td>
+                        <td>${prodNameHtml}</td>
                         <td><span class="badge ${f.supplyMode === 'buy' ? 'badge-primary' : 'badge-accent'}">${logisText}</span></td>
                         <td class="mono">${calc.totalPp.toFixed(1)} PP/j</td>
                         <td class="mono" style="color: var(--danger);">${calc.rawCost.toFixed(2)} €</td>
+                        <td class="mono" style="color: ${calc.salariesCost > 0 ? 'var(--danger)' : 'var(--text-muted)'};">${calc.salariesCost.toFixed(2)} €</td>
                         <td class="mono">${calc.grossRevenue.toFixed(2)} €</td>
-                        <td class="mono" style="color: var(--accent); font-weight: 700;">+${calc.netProfit.toFixed(2)} €</td>
+                        <td class="mono" style="color: ${calc.netProfit >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-weight: 700;">${calc.netProfit >= 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €</td>
                     `;
                     tableBody.appendChild(row);
                 }
@@ -3245,13 +3908,25 @@
             // Mettre à jour les KPIs
             const avgZoneBonus = factories.length > 0 ? (totalZoneBonusSum / factories.length) : 0;
             const gainZonePp = totalPp - basePpSum;
+            const globalEstimatedProfit = totalNetProfit;
+            const globalOwnerProfit = totalNetProfit - totalWorkersMarginGlobal;
             
-            document.getElementById('kpi-profit').innerText = `+${totalNetProfit.toFixed(2)} €/j`;
+            document.getElementById('kpi-profit').innerText = `${globalEstimatedProfit >= 0 ? '+' : ''}${globalEstimatedProfit.toFixed(2)} €/j`;
+            
+            const profitSubtext = document.querySelector('#kpi-profit + .kpi-subtext') || document.querySelector('#kpi-profit').nextElementSibling;
+            if (profitSubtext) {
+                if (totalWorkersMarginGlobal !== 0) {
+                    profitSubtext.innerText = `Usines: ${globalOwnerProfit >= 0 ? '+' : ''}${globalOwnerProfit.toFixed(2)} € | Salariés: ${totalWorkersMarginGlobal >= 0 ? '+' : ''}${totalWorkersMarginGlobal.toFixed(2)} €`;
+                } else {
+                    profitSubtext.innerText = "Par jour de fonctionnement";
+                }
+            }
+
             document.getElementById('kpi-pp').innerText = `${totalPp.toFixed(1)} PP/j`;
             document.getElementById('kpi-pp-sub').innerText = `Base : ${basePpSum} PP/j | Zone : +${gainZonePp.toFixed(1)} PP/j`;
             
             // Troisième carte KPI : Zone Bonus Moyen
-            document.getElementById('kpi-boosts').innerText = `${avgZoneBonus.toFixed(1)}%`;
+            document.getElementById('kpi-boosts').innerText = `${avgZoneBonus.toFixed(2)}%`;
             const boostSubText = document.getElementById('kpi-boosts-sub');
             if (boostSubText) {
                 boostSubText.innerText = `Moyenne sur ${factories.length} usine${factories.length > 1 ? 's' : ''}`;
@@ -3266,6 +3941,24 @@
                 document.getElementById('kpi-best-factory-sub').innerText = "Bénéfice : 0.00 €/j";
             }
 
+            // Mettre à jour le KPI d'emploi du joueur
+            const kpiWorkplaceEl = document.getElementById('kpi-player-workplace');
+            const kpiWorkplaceSubEl = document.getElementById('kpi-player-workplace-sub');
+            if (kpiWorkplaceEl && kpiWorkplaceSubEl) {
+                if (playerWorkplace) {
+                    kpiWorkplaceEl.innerText = `Chez ${playerWorkplace.employerName}`;
+                    kpiWorkplaceEl.style.fontSize = "1.2rem";
+                    kpiWorkplaceSubEl.innerText = `${playerWorkplace.wage.toFixed(3)} €/PP (${playerWorkplace.lastPpQty} PP)`;
+                } else {
+                    // Si aucune transaction n'est détectée ou si l'utilisateur est indépendant,
+                    // afficher "Sans employeur". Travailler pour une entreprise et avoir ses propres
+                    // usines n'ont pas de corrélations.
+                    kpiWorkplaceEl.innerText = "Sans employeur";
+                    kpiWorkplaceEl.style.fontSize = "1.4rem";
+                    kpiWorkplaceSubEl.innerText = "Aucun contrat actif détecté";
+                }
+            }
+
             // Mettre à jour le résumé de la barre latérale (si présent)
             const sideTotalPp = document.getElementById('side-total-pp');
             if (sideTotalPp) sideTotalPp.innerText = `${totalPp.toFixed(1)} PP/j`;
@@ -3278,7 +3971,7 @@
             }
             
             const sideNetProfit = document.getElementById('side-net-profit');
-            if (sideNetProfit) sideNetProfit.innerText = `+${totalNetProfit.toFixed(2)} €/j`;
+            if (sideNetProfit) sideNetProfit.innerText = `${globalEstimatedProfit >= 0 ? '+' : ''}${globalEstimatedProfit.toFixed(2)} €/j`;
         }
 
         function calculateAllResourceEfficiencies() {
