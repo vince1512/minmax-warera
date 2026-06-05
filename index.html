@@ -1505,6 +1505,13 @@
                 <div>
                     <h2>Gestion de vos Usines</h2>
                     <p>Configurez le niveau, le type de production et le bonus de zone pour chaque usine.</p>
+                    <div id="global-entrepreneurship-budget-container" style="margin-top: 12px; display: none; align-items: center; gap: 12px; background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 8px 14px; width: fit-content; font-size: 0.85rem;">
+                        <span>⚡ Budget Entrepreneuriat alloué :</span>
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 4px; width: 120px; height: 10px; overflow: hidden; display: inline-block; vertical-align: middle;">
+                            <div id="global-ent-progress" style="background: var(--accent); width: 0%; height: 100%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <strong id="global-ent-value" style="font-family: var(--font-mono); color: var(--accent);">0%</strong>
+                    </div>
                 </div>
                 <div>
                     <button class="btn btn-primary" onclick="addNewFactory()">➕ Ajouter une Usine</button>
@@ -2174,7 +2181,8 @@
                         productionType: "calcaire",
                         supplyMode: "buy", // 'buy' or 'self'
                         zoneBonus: 0,
-                        boosts: 0
+                        boosts: 0,
+                        entrepreneurship: 0
                     });
                 }
                 saveState();
@@ -2349,6 +2357,21 @@
             }
         }
 
+        // Global Helper for Country Ethic (Doctrine) Production Bonus
+        function getCountryEthicBonus(c, apiCode) {
+            if (!c || !apiCode) return 0;
+            const St = ["coca", "grain", "livestock", "fish"];
+            const Mt = ["lightAmmo", "ammo", "heavyAmmo", "steel", "concrete", "oil", "iron", "limestone", "petroleum", "lead"];
+            if (St.includes(apiCode)) {
+                if (c.industrialism === -2) return 30;
+                if (c.industrialism === -1) return 10;
+            } else if (Mt.includes(apiCode)) {
+                if (c.industrialism === 2) return 30;
+                if (c.industrialism === 1) return 10;
+            }
+            return 0;
+        }
+
         function getCountryFlagFromId(countryId) {
             const savedCountries = localStorage.getItem('usines_sim_countries');
             if (savedCountries && countryId) {
@@ -2496,7 +2519,7 @@
             allKeys.forEach(key => {
                 const res = resources[key];
                 const apiCode = LOCAL_TO_API_MAPPING[key] || key;
-                const isRaw = res.type === 'raw';
+                const isRaw = res.type === 'raw' || key === 'plomb';
 
                 let mergedList = [];
 
@@ -2504,7 +2527,7 @@
                 const specCountries = countries.filter(c => c.specializedItem === apiCode);
                 specCountries.forEach(c => {
                     const stratBonus = getCountryStrategicBonus(c);
-                    const ethicBonus = 30; // +30% éthique industrialiste
+                    const ethicBonus = getCountryEthicBonus(c, apiCode);
                     const totalBonus = stratBonus + ethicBonus;
                     mergedList.push({
                         type: 'specialization',
@@ -2525,7 +2548,7 @@
                         const c = countryMap[r.country];
                         const stratBonus = c ? getCountryStrategicBonus(c) : 0;
                         const isSpecialized = c && c.specializedItem === apiCode;
-                        const ethicBonus = isSpecialized ? 30 : 0;
+                        const ethicBonus = isSpecialized ? getCountryEthicBonus(c, apiCode) : 0;
                         const depositBonus = parseFloat(r.deposit.bonusPercent) || 0;
                         const totalBonus = stratBonus + ethicBonus + depositBonus;
                         
@@ -2719,7 +2742,7 @@
             Object.keys(resources).forEach(key => {
                 const res = resources[key];
                 const apiCode = LOCAL_TO_API_MAPPING[key] || key;
-                const isRaw = res.type === 'raw';
+                const isRaw = res.type === 'raw' || key === 'plomb';
                 let maxTotal = 0;
 
                 if (isRaw) {
@@ -2728,7 +2751,7 @@
                         const c = countryMap[r.country];
                         const stratBonus = c ? getCountryStrategicBonus(c) : 0;
                         const isSpecialized = c && c.specializedItem === apiCode;
-                        const ethicBonus = isSpecialized ? 30 : 0;
+                        const ethicBonus = isSpecialized ? getCountryEthicBonus(c, apiCode) : 0;
                         
                         let depositBonus = 0;
                         if (r.deposit && r.deposit.type === apiCode) {
@@ -2748,7 +2771,7 @@
                     countries.forEach(c => {
                         if (c.specializedItem === apiCode) {
                             const strat = getCountryStrategicBonus(c);
-                            const total = strat + 30; // +30% éthique ind.
+                            const total = strat + getCountryEthicBonus(c, apiCode);
                             if (total > maxTotal) maxTotal = total;
                         }
                     });
@@ -2757,7 +2780,7 @@
                     countries.forEach(c => {
                         if (c.specializedItem === apiCode) {
                             const strat = getCountryStrategicBonus(c);
-                            const ethic = 30; // éthique ind.
+                            const ethic = getCountryEthicBonus(c, apiCode);
                             const total = strat + ethic;
                             if (total > maxTotal) maxTotal = total;
                         }
@@ -2798,6 +2821,7 @@
                 factories.forEach(f => {
                     if (!f.workers) f.workers = [];
                     if (!f.simulatedWorkers) f.simulatedWorkers = [];
+                    if (f.entrepreneurship === undefined) f.entrepreneurship = 0;
                 });
             }
             if (savedRes) {
@@ -2909,7 +2933,8 @@
                         level: 1,
                         productionType: "calcaire",
                         supplyMode: "buy",
-                        zoneBonus: 0
+                        zoneBonus: 0,
+                        entrepreneurship: 0
                     });
                 }
                 
@@ -3137,14 +3162,36 @@
                 // Récupérer pays & régions en arrière-plan
                 statusDiv.innerText = "Mise à jour des zones...";
                 try {
-                    const [countriesRes, regionsRes] = await Promise.all([
+                    const [countriesRes, regionsRes, statsRes] = await Promise.all([
                         fetch("https://gateway.warerastats.io/trpc/country.getAllCountries", { headers }),
-                        fetch("https://gateway.warerastats.io/trpc/region.getRegionsObject", { headers })
+                        fetch("https://gateway.warerastats.io/trpc/region.getRegionsObject", { headers }),
+                        fetch("https://api.warerastats.io/countries").catch(e => {
+                            console.warn("Échec fetch stats.io", e);
+                            return null;
+                        })
                     ]);
+
+                    let statsCountries = [];
+                    if (statsRes && statsRes.ok) {
+                        try {
+                            statsCountries = await statsRes.json();
+                        } catch (e) {
+                            console.warn("Échec parsing stats countries", e);
+                        }
+                    }
+
                     if (countriesRes.ok) {
                         const countriesData = await countriesRes.json();
                         if (countriesData.result && countriesData.result.data) {
-                            localStorage.setItem('usines_sim_countries', JSON.stringify(countriesData.result.data));
+                            const rawCountries = countriesData.result.data;
+                            
+                            // Fusionner la valeur d'industrialisme de warerastats
+                            rawCountries.forEach(c => {
+                                const statsC = statsCountries.find(sc => sc.countryId === c._id);
+                                c.industrialism = statsC ? statsC.industrialism : 0;
+                            });
+
+                            localStorage.setItem('usines_sim_countries', JSON.stringify(rawCountries));
                         }
                     }
                     if (regionsRes.ok) {
@@ -3327,7 +3374,9 @@
                         supplyMode: existing ? existing.supplyMode : 'buy',
                         zoneBonus: existing ? existing.zoneBonus : 0,
                         regionId: c.region,
-                        workers: workersList
+                        workers: workersList,
+                        entrepreneurship: existing && existing.entrepreneurship !== undefined ? existing.entrepreneurship : 0,
+                        simulatedWorkers: existing && existing.simulatedWorkers ? existing.simulatedWorkers : []
                     };
                 });
 
@@ -3468,6 +3517,37 @@
             const container = document.getElementById('factories-container');
             container.innerHTML = '';
 
+            // Calculer l'allocation globale d'entrepreneuriat
+            let totalEntAllocation = 0;
+            factories.forEach(f => {
+                totalEntAllocation += f.entrepreneurship !== undefined ? f.entrepreneurship : 0;
+            });
+            const budgetContainer = document.getElementById('global-entrepreneurship-budget-container');
+            const entProgress = document.getElementById('global-ent-progress');
+            const entValue = document.getElementById('global-ent-value');
+            if (budgetContainer && entProgress && entValue) {
+                if (factories.length > 0) {
+                    budgetContainer.style.display = 'flex';
+                    entValue.innerText = `${totalEntAllocation}%`;
+                    entProgress.style.width = `${Math.min(100, totalEntAllocation)}%`;
+                    if (totalEntAllocation > 100) {
+                        entProgress.style.background = 'var(--danger)';
+                        entValue.style.color = 'var(--danger)';
+                        budgetContainer.style.borderColor = 'rgba(244,63,94,0.3)';
+                        budgetContainer.style.background = 'rgba(244,63,94,0.05)';
+                        entValue.title = "Alerte : Vous allouez plus de 100% de votre énergie d'entrepreneuriat globale !";
+                    } else {
+                        entProgress.style.background = 'var(--accent)';
+                        entValue.style.color = 'var(--accent)';
+                        budgetContainer.style.borderColor = 'rgba(255,255,255,0.03)';
+                        budgetContainer.style.background = 'rgba(0,0,0,0.15)';
+                        entValue.removeAttribute('title');
+                    }
+                } else {
+                    budgetContainer.style.display = 'none';
+                }
+            }
+
             // Mettre à jour le texte du bouton d'ajout avec le coût de construction actuel en béton
             const addButton = document.querySelector('button[onclick="addNewFactory()"]');
             if (addButton) {
@@ -3539,7 +3619,7 @@
                                         "coca": "coca", "cocain": "cocain"
                                     };
                                     const apiCode = API_ITEM_MAPPING[factory.productionType];
-                                    const ethic = (country.specializedItem === apiCode) ? 30 : 0;
+                                    const ethic = (country.specializedItem === apiCode) ? getCountryEthicBonus(country, apiCode) : 0;
 
                                     let deposit = 0;
                                     if (region.deposit && region.deposit.type === apiCode) {
@@ -3549,7 +3629,7 @@
                                         }
                                     }
 
-                                    breakdownTooltip = `Détail : Base Pays +${strat}% | Spé Pays +${ethic}% | Gisement +${deposit}%`;
+                                    breakdownTooltip = `Détail : Stratégique +${strat}% | Éthique Ind. +${ethic}% | Gisement +${deposit}%`;
                                 }
                             }
                         } catch (e) {
@@ -3610,6 +3690,18 @@
                     `;
                 }
 
+                // Boutons d'entrepreneuriat (allocation d'énergie)
+                const currentEnt = factory.entrepreneurship !== undefined ? factory.entrepreneurship : 0;
+                let entButtons = '';
+                [0, 25, 50, 75, 100].forEach(val => {
+                    entButtons += `
+                        <button class="${currentEnt === val ? 'active' : ''}" 
+                                onclick="changeFactoryEntrepreneurship('${factory.id}', ${val})">${val}%</button>
+                    `;
+                });
+
+                const maxRentableSalary = getMaxRentableSalary(factory);
+
                 // Affichage du bouton "Upgrade" et des coûts
                 let upgradeHtml = '';
                 if (factory.level < 7) {
@@ -3619,8 +3711,7 @@
                     
                     // Calcul du ROI d'amélioration
                     const extraPp = 24; // Augmentation de production
-                    const currentProfitPerPp = calc.profitPerPp;
-                    const dailyProfitGain = extraPp * currentProfitPerPp;
+                    const dailyProfitGain = extraPp * maxRentableSalary;
                     const paybackDays = dailyProfitGain > 0 ? (euroCost / dailyProfitGain).toFixed(1) : '∞';
 
                     upgradeHtml = `
@@ -3650,8 +3741,7 @@
                     `;
                 }
 
-                // Calculer le Salaire Max Rentable et les marges salariés
-                const maxRentableSalary = getMaxRentableSalary(factory);
+                // Calculer les marges salariés
                 const totalWorkersMargin = calc.workersMargin;
 
                 // Récupérer et générer la liste des ouvriers
@@ -3689,7 +3779,7 @@
                                 }
                             }
 
-                            const fidelity = w.fidelity || 1;
+                            const fidelity = (w.fidelity !== undefined && w.fidelity !== null) ? parseFloat(w.fidelity) : 0;
                             const seniorityBonus = `+${fidelity}%`;
 
                             const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
@@ -3697,9 +3787,11 @@
                             const wProdWithFidelity = wProd * (1 + fidelity / 100);
                             const dailySessions = (wEnergy * 2.4) / 10;
                             const dailyPpOutput = dailySessions * wProdWithFidelity;
-                            
-                            const marginPerPp = maxRentableSalary - w.wage;
-                            const dailyWorkerMargin = marginPerPp * dailyPpOutput;
+                            const baseDailyPp = dailySessions * wProd;
+
+                            const workerMaxSalary = maxRentableSalary * (1 + fidelity / 100);
+                            const marginPerPp = workerMaxSalary - w.wage;
+                            const dailyWorkerMargin = marginPerPp * baseDailyPp;
 
                             const marginColor = dailyWorkerMargin >= 0 ? 'var(--accent)' : 'var(--danger)';
                             const marginPrefix = dailyWorkerMargin >= 0 ? '+' : '';
@@ -3713,6 +3805,10 @@
                                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted);">
                                         <span>Salaire : <strong style="color: #fff; font-family: var(--font-mono);">${w.wage.toFixed(3)} €/PP</strong></span>
                                         <span>Ancienneté : <strong style="color: #fff;">${seniorityBonus}</strong></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                                        <span>Max rentable : <strong style="color: var(--accent); font-family: var(--font-mono);">${workerMaxSalary.toFixed(3)} €/PP</strong></span>
+                                        <span>Max (10% anc.) : <strong style="color: var(--warning); font-family: var(--font-mono);">${(maxRentableSalary * 1.1).toFixed(3)} €/PP</strong></span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                         <span>Marge théorique :</span>
@@ -3729,7 +3825,7 @@
                     // Ouvriers simulés
                     if (factory.simulatedWorkers) {
                         factory.simulatedWorkers.forEach(w => {
-                            const fidelity = w.fidelity || 10;
+                            const fidelity = (w.fidelity !== undefined && w.fidelity !== null) ? parseFloat(w.fidelity) : 10;
                             const seniorityBonus = `+${fidelity}%`;
 
                             const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
@@ -3737,9 +3833,11 @@
                             const wProdWithFidelity = wProd * (1 + fidelity / 100);
                             const dailySessions = (wEnergy * 2.4) / 10;
                             const dailyPpOutput = dailySessions * wProdWithFidelity;
-                            
-                            const marginPerPp = maxRentableSalary - w.wage;
-                            const dailyWorkerMargin = marginPerPp * dailyPpOutput;
+                            const baseDailyPp = dailySessions * wProd;
+
+                            const workerMaxSalary = maxRentableSalary * (1 + fidelity / 100);
+                            const marginPerPp = workerMaxSalary - w.wage;
+                            const dailyWorkerMargin = marginPerPp * baseDailyPp;
 
                             const marginColor = dailyWorkerMargin >= 0 ? 'var(--accent)' : 'var(--danger)';
                             const marginPrefix = dailyWorkerMargin >= 0 ? '+' : '';
@@ -3771,6 +3869,11 @@
                                             <label style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 2px; text-transform: none;">Énergie</label>
                                             <input type="number" step="10" min="0" value="${wEnergy}" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); color: #fff; font-family: var(--font-mono);" onchange="updateSimulatedWorker('${factory.id}', '${w.id}', 'energy', this.value)">
                                         </div>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                                        <span>Max rentable : <strong style="color: var(--accent); font-family: var(--font-mono);">${workerMaxSalary.toFixed(3)} €/PP</strong></span>
+                                        <span>Max (10% anc.) : <strong style="color: var(--warning); font-family: var(--font-mono);">${(maxRentableSalary * 1.1).toFixed(3)} €/PP</strong></span>
                                     </div>
                                     
                                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 4px;">
@@ -3836,6 +3939,14 @@
                             </div>
                         </div>
 
+                        <!-- Entrepreneuriat -->
+                        <div class="form-group">
+                            <label>Entrepreneuriat (Allocation d'énergie)</label>
+                            <div class="level-selector">
+                                ${entButtons}
+                            </div>
+                        </div>
+
                         <!-- Type de Production -->
                         <div class="form-group">
                             <label>Type de Production</label>
@@ -3871,18 +3982,18 @@
                                 <span>Recettes brutes :</span>
                                 <strong style="font-family: var(--font-mono);">${calc.grossRevenue.toFixed(2)} €/j</strong>
                             </div>
-                            ${totalWorkersCount > 0 ? `
                             <div class="factory-stat-row" style="font-size: 0.90rem; font-weight: 600; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                 <span>Bénéfice Industriel (Base) :</span>
-                                <strong style="color: ${calc.netProfit >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${calc.netProfit >= 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/j</strong>
+                                <strong style="color: ${calc.ownerNetProfit >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${calc.ownerNetProfit >= 0 ? '+' : ''}${calc.ownerNetProfit.toFixed(2)} €/j</strong>
                             </div>
+                            ${totalWorkersCount > 0 ? `
                             <div class="factory-stat-row" style="font-size: 0.90rem; font-weight: 600;">
                                 <span>Marge Salariés :</span>
                                 <strong style="color: ${totalWorkersMargin >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${totalWorkersMargin >= 0 ? '+' : ''}${totalWorkersMargin.toFixed(2)} €/j</strong>
                             </div>
                             <div class="factory-stat-row" style="font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
                                 <span>Bénéfice Réel Estimé :</span>
-                                <strong style="color: ${(calc.netProfit + totalWorkersMargin) >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${(calc.netProfit + totalWorkersMargin) >= 0 ? '+' : ''}${(calc.netProfit + totalWorkersMargin).toFixed(2)} €/jour</strong>
+                                <strong style="color: ${calc.netProfit >= 0 ? 'var(--accent)' : 'var(--danger)'}; font-family: var(--font-mono);">${calc.netProfit >= 0 ? '+' : ''}${calc.netProfit.toFixed(2)} €/jour</strong>
                             </div>
                             ` : `
                             <div class="factory-stat-row" style="font-size: 0.95rem; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px;">
@@ -3892,8 +4003,12 @@
                             `}
                             ${factory.productionType !== 'inactif' ? `
                             <div class="factory-stat-row" style="font-size: 0.85rem; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px; margin-top: 4px;">
-                                <span>Salaire Max Rentable :</span>
+                                <span>Salaire Max Rentable (0% anc.) :</span>
                                 <strong style="color: var(--accent); font-family: var(--font-mono);">${maxRentableSalary.toFixed(3)} €/PP</strong>
+                            </div>
+                            <div class="factory-stat-row" style="font-size: 0.85rem; font-weight: 600; margin-top: 2px;">
+                                <span>Salaire Max Rentable (10% anc.) :</span>
+                                <strong style="color: var(--warning); font-family: var(--font-mono);">${(maxRentableSalary * 1.1).toFixed(3)} €/PP</strong>
                             </div>
                             ` : ''}
                         </div>
@@ -3925,7 +4040,8 @@
                 supplyMode: bestStrategy.mode || 'buy',
                 zoneBonus: defaultBonus,
                 workers: [],
-                simulatedWorkers: []
+                simulatedWorkers: [],
+                entrepreneurship: 0
             });
             saveState();
             renderFactories();
@@ -4015,6 +4131,16 @@
             const index = factories.findIndex(f => f.id === id);
             if (index !== -1) {
                 factories[index].level = level;
+                saveState();
+                renderFactories();
+                updateCalculations();
+            }
+        }
+
+        function changeFactoryEntrepreneurship(id, value) {
+            const index = factories.findIndex(f => f.id === id);
+            if (index !== -1) {
+                factories[index].entrepreneurship = parseInt(value) || 0;
                 saveState();
                 renderFactories();
                 updateCalculations();
@@ -4127,7 +4253,7 @@
                     "coca": "coca", "cocain": "cocain"
                 };
                 const apiCode = API_ITEM_MAPPING[factory.productionType];
-                const ethic = (country.specializedItem === apiCode) ? 30 : 0;
+                const ethic = (country.specializedItem === apiCode) ? getCountryEthicBonus(country, apiCode) : 0;
 
                 let deposit = 0;
                 if (region.deposit && region.deposit.type === apiCode) {
@@ -4137,7 +4263,7 @@
                     }
                 }
 
-                return `Détail : Base Pays +${strat.toFixed(1)}% | Spé Pays +${ethic.toFixed(1)}% | Gisement +${deposit.toFixed(1)}%`;
+                return `Détail : Stratégique +${strat.toFixed(1)}% | Éthique Ind. +${ethic.toFixed(1)}% | Gisement +${deposit.toFixed(1)}%`;
             } catch (e) {
                 console.error("Erreur génération tooltip", e);
                 return `Bonus configuré : +${(parseFloat(factory.zoneBonus) || 0).toFixed(1)}%`;
@@ -4187,7 +4313,7 @@
                 };
 
                 const apiCode = API_ITEM_MAPPING[factory.productionType];
-                const ethicBonus = (country.specializedItem === apiCode) ? 30 : 0;
+                const ethicBonus = (country.specializedItem === apiCode) ? getCountryEthicBonus(country, apiCode) : 0;
 
                 let depositBonus = 0;
                 if (region.deposit && region.deposit.type === apiCode) {
@@ -4254,10 +4380,13 @@
                 };
             }
 
-            // 1. Capacité PP propriétaire
+            // 1. Capacité PP propriétaire (avec allocation d'entrepreneuriat)
+            const allocation = factory.entrepreneurship !== undefined ? factory.entrepreneurship : 0;
             const basePp = LEVEL_PP[factory.level] || 0;
             const zoneBonusPercent = getFactoryComputedZoneBonus(factory);
-            const ownerPp = basePp * (1 + zoneBonusPercent / 100);
+            const dailyEntSessions = (playerSkills.entrepreneurship.value * 2.4) / 10;
+            const selfPp = dailyEntSessions * playerSkills.production.value * (allocation / 100);
+            const ownerPp = (basePp + selfPp) * (1 + zoneBonusPercent / 100);
 
             // 2. Capacité PP ouvriers et coût des salaires
             let workersPp = 0;
@@ -4265,7 +4394,7 @@
 
             if (factory.workers) {
                 factory.workers.forEach(w => {
-                    const fidelity = w.fidelity || 1;
+                    const fidelity = (w.fidelity !== undefined && w.fidelity !== null) ? parseFloat(w.fidelity) : 0;
                     const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
                     const wEnergy = (w.skills && w.skills.energy && w.skills.energy.total) || playerSkills.workerEnergy || 80;
                     const wProdWithFidelity = wProd * (1 + fidelity / 100);
@@ -4276,14 +4405,14 @@
                     const boostedPp = dailyPpOutput * (1 + zoneBonusPercent / 100);
                     workersPp += boostedPp;
                     
-                    // Le salaire est basé sur les PP bruts travaillés (énergie dépensée)
-                    salariesCost += w.wage * dailyPpOutput;
+                    // Le salaire est basé sur les PP de base travaillés (l'ancienneté n'augmente pas le coût salarial)
+                    salariesCost += w.wage * (dailySessions * wProd);
                 });
             }
 
             if (factory.simulatedWorkers) {
                 factory.simulatedWorkers.forEach(w => {
-                    const fidelity = w.fidelity || 10;
+                    const fidelity = (w.fidelity !== undefined && w.fidelity !== null) ? parseFloat(w.fidelity) : 10;
                     const wProd = (w.skills && w.skills.production && w.skills.production.total) || playerSkills.workerProd || 31;
                     const wEnergy = (w.skills && w.skills.energy && w.skills.energy.total) || playerSkills.workerEnergy || 80;
                     const wProdWithFidelity = wProd * (1 + fidelity / 100);
@@ -4294,8 +4423,8 @@
                     const boostedPp = dailyPpOutput * (1 + zoneBonusPercent / 100);
                     workersPp += boostedPp;
                     
-                    // Le salaire est basé sur les PP bruts travaillés (énergie dépensée)
-                    salariesCost += w.wage * dailyPpOutput;
+                    // Le salaire est basé sur les PP de base travaillés (l'ancienneté n'augmente pas le coût salarial)
+                    salariesCost += w.wage * (dailySessions * wProd);
                 });
             }
 
@@ -4410,9 +4539,12 @@
             factories.forEach(f => {
                 const calc = calculateSingleFactory(f);
                 
+                const allocation = f.entrepreneurship !== undefined ? f.entrepreneurship : 0;
                 totalPp += calc.ownerPp;
                 totalNetProfit += calc.netProfit;
-                basePpSum += LEVEL_PP[f.level] || 0;
+                const dailyEntSessions = (playerSkills.entrepreneurship.value * 2.4) / 10;
+                const selfPp = dailyEntSessions * playerSkills.production.value * (allocation / 100);
+                basePpSum += (LEVEL_PP[f.level] || 0) + selfPp;
                 totalZoneBonusSum += getFactoryComputedZoneBonus(f);
                 totalWorkersMarginGlobal += calc.workersMargin;
                 totalSalariesCostGlobal += calc.salariesCost;
@@ -4754,8 +4886,8 @@
                         const steelCost = UPGRADE_COSTS[currentLvl] || 0;
                         const euroCost = steelCost * priceAcier;
                         
-                        const calcCurrent = calculateSingleFactory(f);
-                        const calcNext = calculateSingleFactory({ ...f, level: nextLvl });
+                        const calcCurrent = calculateSingleFactory({ ...f, entrepreneurship: 0, workers: [], simulatedWorkers: [] });
+                        const calcNext = calculateSingleFactory({ ...f, level: nextLvl, entrepreneurship: 0, workers: [], simulatedWorkers: [] });
                         const dailyProfitGain = calcNext.netProfit - calcCurrent.netProfit;
                         const paybackDays = dailyProfitGain > 0 ? (euroCost / dailyProfitGain) : Infinity;
 
@@ -4784,25 +4916,44 @@
                 if (simFactories.length < 12) {
                     const nextIndex = simFactories.length;
                     const concreteCost = 50 + 50 * nextIndex;
-                    const euroCost = concreteCost * priceBeton;
+                    
+                    // Niveau cible : moyenne des usines existantes (borné entre 1 et 6)
+                    const targetLvl = Math.max(1, Math.min(6, Math.round(simFactories.reduce((sum, f) => sum + f.level, 0) / simFactories.length) || 1));
+                    
+                    // Coût total en acier pour monter de Lvl 1 à targetLvl
+                    let steelCostTotal = 0;
+                    for (let l = 1; l < targetLvl; l++) {
+                        steelCostTotal += UPGRADE_COSTS[l] || 0;
+                    }
+                    
+                    const euroCost = (concreteCost * priceBeton) + (steelCostTotal * priceAcier);
                     
                     const newFactoryTemp = {
-                        level: 1,
+                        level: targetLvl,
                         productionType: bestStrategy.key,
                         supplyMode: bestStrategy.mode || 'buy',
-                        zoneBonus: defaultBonus
+                        zoneBonus: defaultBonus,
+                        entrepreneurship: 0,
+                        workers: [],
+                        simulatedWorkers: []
                     };
                     const calcNew = calculateSingleFactory(newFactoryTemp);
                     const dailyProfitGain = calcNew.netProfit;
                     const paybackDays = dailyProfitGain > 0 ? (euroCost / dailyProfitGain) : Infinity;
+
+                    let costText = `Coût : ${concreteCost} Béton`;
+                    if (targetLvl > 1) {
+                        costText += ` + ${steelCostTotal} Acier`;
+                    }
+                    costText += ` (~${euroCost.toFixed(2)} €)`;
 
                     options.push({
                         type: 'construct',
                         factoryIndex: -1,
                         factoryName: `✨ Nouvelle Usine (Construction #${nextIndex + 1})`,
                         currentLevel: 0,
-                        nextLevel: 1,
-                        costText: `Coût : ${concreteCost} Béton (~${euroCost.toFixed(2)} €)`,
+                        nextLevel: targetLvl,
+                        costText: costText,
                         dailyProfitGain: dailyProfitGain,
                         paybackDays: paybackDays,
                         euroCost: euroCost,
@@ -4829,7 +4980,7 @@
                     const newF = {
                         id: newId,
                         name: `Usine ${simFactories.length + 1} (Simulée)`,
-                        level: 1,
+                        level: bestOption.nextLevel,
                         productionType: bestOption.tempFactory.productionType,
                         supplyMode: bestOption.tempFactory.supplyMode,
                         zoneBonus: bestOption.tempFactory.zoneBonus
@@ -5915,22 +6066,27 @@
                     const item = document.createElement('div');
                     item.className = `worker-profit-card ${isProfitable ? 'profitable' : 'unprofitable'}`;
 
+                    const dailyProfit0 = ppWorked * (maxSalary - playerSkills.workerSalary);
+                    const dailyProfit10 = ppWorked * (maxSalary * 1.1 - playerSkills.workerSalary);
+
                     let statusHtml = '';
-                    if (isProfitable) {
-                        statusHtml = `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <strong style="color: var(--accent);">✔️ Embauche rentable</strong>
-                                <strong style="color: var(--accent); font-family: var(--font-mono); font-size: 0.95rem;">+${dailyWorkerNetProfit.toFixed(2)} €/jour</strong>
+                    const color0 = dailyProfit0 >= 0 ? 'var(--accent)' : 'var(--danger)';
+                    const color10 = dailyProfit10 >= 0 ? 'var(--accent)' : 'var(--danger)';
+                    const prefix0 = dailyProfit0 >= 0 ? '+' : '';
+                    const prefix10 = dailyProfit10 >= 0 ? '+' : '';
+
+                    statusHtml = `
+                        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; padding: 6px; background: rgba(255,255,255,0.02); border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem;">
+                                <span style="color: var(--text-muted);">Marge (0% anc.) :</span>
+                                <strong style="color: ${color0}; font-family: var(--font-mono);">${prefix0}${dailyProfit0.toFixed(2)} €/j</strong>
                             </div>
-                        `;
-                    } else {
-                        statusHtml = `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <strong style="color: var(--danger);">❌ Non rentable</strong>
-                                <strong style="color: var(--danger); font-family: var(--font-mono); font-size: 0.95rem;">${dailyWorkerNetProfit.toFixed(2)} €/jour</strong>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem;">
+                                <span style="color: var(--text-muted);">Marge (10% anc.) :</span>
+                                <strong style="color: ${color10}; font-family: var(--font-mono);">${prefix10}${dailyProfit10.toFixed(2)} €/j</strong>
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
                     
                     const resName = res ? res.name : f.productionType;
                     const loc = getFactoryLocationInfo(f);
@@ -5941,7 +6097,8 @@
                         <div style="font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 4px; cursor: help;" title="${tooltip}">${escapeHTML(f.name)} (${label})</div>
                         ${statusHtml}
                         <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; display: flex; flex-direction: column; gap: 2px;">
-                            <div>Salaire max rentable : <strong style="color: #fff; font-family: var(--font-mono);">${maxSalary.toFixed(3)} €</strong> / PP</div>
+                            <div>Salaire max rentable (0% anc.) : <strong style="color: #fff; font-family: var(--font-mono);">${maxSalary.toFixed(3)} €</strong> / PP</div>
+                            <div>Salaire max rentable (10% anc.) : <strong style="color: var(--warning); font-family: var(--font-mono);">${(maxSalary * 1.1).toFixed(3)} €</strong> / PP</div>
                             <div>Production min. (pour couvrir en 1j) : <strong style="color: #fff;">${minProd.toFixed(1)} PP</strong></div>
                             <div>Énergie min. (pour couvrir en 1j) : <strong style="color: #fff;">${minEnergy.toFixed(0)} Énergie</strong> (Lvl ${(minEnergy < 30 ? 0 : Math.ceil((minEnergy - 30) / 10))})</div>
                         </div>
